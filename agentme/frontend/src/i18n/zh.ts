@@ -68,6 +68,7 @@ const zh = {
     'settings.language': '语言',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',
+    'settings.language.es': 'Español',
 
     // Errors
     'error.picoNotInstalled': 'PicoClaw 未安装。',

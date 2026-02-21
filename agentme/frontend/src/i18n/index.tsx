@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import zh, { TranslationKeys } from './zh';
 import en from './en';
+import es from './es';
 
-export type Lang = 'zh' | 'en';
+export type Lang = 'en' | 'es' | 'zh';
 
-const translations: Record<Lang, Record<TranslationKeys, string>> = { zh, en };
+const translations: Record<Lang, Record<TranslationKeys, string>> = { en, es, zh };
 
 interface I18nContextType {
     lang: Lang;
@@ -20,7 +21,9 @@ const I18nContext = createContext<I18nContextType>({
 
 function detectSystemLang(): Lang {
     const nav = navigator.language || (navigator as any).userLanguage || 'en';
-    return nav.startsWith('zh') ? 'zh' : 'en';
+    if (nav.startsWith('zh')) return 'zh';
+    if (nav.startsWith('es')) return 'es';
+    return 'en';
 }
 
 export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,11 +48,11 @@ export const I18nProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, [lang]);
 
     return (
-        <I18nContext.Provider value= {{ lang, setLang, t }
-}>
-    { children }
-    </I18nContext.Provider>
-  );
+        <I18nContext.Provider value={{ lang, setLang, t }
+        }>
+            {children}
+        </I18nContext.Provider>
+    );
 };
 
 export const useI18n = () => useContext(I18nContext);

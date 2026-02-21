@@ -131,15 +131,6 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 </h3>
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setLang('zh')}
-                    className={`px-4 py-2 rounded font-mono text-sm transition-colors ${lang === 'zh'
-                      ? 'bg-[var(--color-accent)] text-white'
-                      : 'bg-[var(--color-border)] text-[var(--color-dim)] hover:text-[var(--color-fg)]'
-                      }`}
-                  >
-                    {t('settings.language.zh')}
-                  </button>
-                  <button
                     onClick={() => setLang('en')}
                     className={`px-4 py-2 rounded font-mono text-sm transition-colors ${lang === 'en'
                       ? 'bg-[var(--color-accent)] text-white'
@@ -147,6 +138,24 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       }`}
                   >
                     {t('settings.language.en')}
+                  </button>
+                  <button
+                    onClick={() => setLang('es')}
+                    className={`px-4 py-2 rounded font-mono text-sm transition-colors ${lang === 'es'
+                      ? 'bg-[var(--color-accent)] text-white'
+                      : 'bg-[var(--color-border)] text-[var(--color-dim)] hover:text-[var(--color-fg)]'
+                      }`}
+                  >
+                    {t('settings.language.es')}
+                  </button>
+                  <button
+                    onClick={() => setLang('zh')}
+                    className={`px-4 py-2 rounded font-mono text-sm transition-colors ${lang === 'zh'
+                      ? 'bg-[var(--color-accent)] text-white'
+                      : 'bg-[var(--color-border)] text-[var(--color-dim)] hover:text-[var(--color-fg)]'
+                      }`}
+                  >
+                    {t('settings.language.zh')}
                   </button>
                 </div>
               </div>

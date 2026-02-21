@@ -70,6 +70,7 @@ const en: Record<TranslationKeys, string> = {
     'settings.language': 'Language',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',
+    'settings.language.es': 'Español',
 
     // Errors
     'error.picoNotInstalled': 'PicoClaw is not installed.',
