@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wails version:*)",
+      "Bash(node:*)",
+      "Bash(wails init:*)",
+      "Bash(npm install:*)",
+      "Bash(wails generate:*)",
+      "Bash(npm run build:*)",
+      "Bash(wails build:*)",
+      "Bash(picoclaw --help:*)",
+      "mcp__web-search-prime__webSearchPrime",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs",
+      "Bash(go get:*)",
+      "Bash(go build:*)",
+      "Bash(go doc:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "mcp__zai-mcp-server__ui_to_artifact",
+      "Bash(/Users/jerry/Downloads/agentmeApp/agentme/wails.json:*)",
+      "Bash(cat:*)"
+    ]
+  }
+}

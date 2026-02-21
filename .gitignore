@@ -1,0 +1,30 @@
+# Dependencies
+agentme/frontend/node_modules/
+
+# Build output
+agentme/build/bin/
+agentme/frontend/dist/
+
+# picoclaw binary and source
+picoclaw
+picoclaw_src/
+
+# OS files
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Go
+*.exe
+*.test
+*.out
+
+# IDE
+.idea/
+.vscode/
+*.code-workspace
+
+# Temp files
+/tmp/
+agentme/agentme
