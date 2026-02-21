@@ -5,7 +5,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_DIR="$SCRIPT_DIR"
 PICOCLAW_BIN="$(dirname "$PROJECT_DIR")/picoclaw"
-APP_BUNDLE="$PROJECT_DIR/build/bin/turboclaw.app"
+APP_BUNDLE="$PROJECT_DIR/build/bin/TurboClaw.app"
 MACOS_DIR="$APP_BUNDLE/Contents/MacOS"
 
 # Check picoclaw binary exists
