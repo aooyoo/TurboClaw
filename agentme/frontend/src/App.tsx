@@ -73,7 +73,7 @@ export default function App() {
     try {
       const session = await CreateSession(`对话 ${sessions.length + 1}`) as unknown as ChatSession;
       if (session) {
-        setSessions(prev => [...prev, session]);
+        setSessions(prev => [session, ...prev]);
         setCurrentSessionId(session.id);
       }
     } catch (err) {

@@ -217,7 +217,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
                 <div className="text-body text-[var(--color-dim)] space-y-2">
                   <p>
-                    TurboClaw 是 OpenClaw 的本地客户端，让您能够方便地管理和使用本地 AI 助手。
+                    TurboClaw 是本地 Agent 客户端，让您能够方便地管理和使用本地 AI 助手。
                   </p>
                   <p>
                     主要功能包括：

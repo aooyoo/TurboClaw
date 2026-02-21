@@ -64,7 +64,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
           <h1 className="font-mono text-h1 uppercase tracking-widest text-[var(--color-fg)] mb-2">
             TurboClaw
           </h1>
-          <p className="text-body text-[var(--color-dim)]">OpenClaw 本地客户端</p>
+          <p className="text-body text-[var(--color-dim)]">只属于你的Agent</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
