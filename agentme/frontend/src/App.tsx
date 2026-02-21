@@ -118,7 +118,7 @@ export default function App() {
 
       // Phase 2: Get AI response asynchronously
       setLoading(true);
-      const sessionWithAIResponse = await GetAIResponse(content) as unknown as ChatSession;
+      const sessionWithAIResponse = await GetAIResponse(content, files) as unknown as ChatSession;
       if (sessionWithAIResponse) {
         setSessions(prev => prev.map(s =>
           s.id === sessionWithAIResponse.id ? sessionWithAIResponse : s

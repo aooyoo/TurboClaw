@@ -639,15 +639,25 @@ func extractCleanResponse(output string) string {
 
 // GetAIResponse calls picoclaw to get AI response for the given content,
 // then adds the response to the current session
-func (a *App) GetAIResponse(content string) (*ChatSession, error) {
+func (a *App) GetAIResponse(content string, files []string) (*ChatSession, error) {
 	var response string
+
+	// Build the full message with file references
+	fullMessage := content
+	if len(files) > 0 {
+		fileRefs := "\n\n[Attached files]:\n"
+		for _, f := range files {
+			fileRefs += "- " + f + "\n"
+		}
+		fullMessage += fileRefs
+	}
 
 	// Check if picoclaw is available
 	binaryPath, _ := a.picoclaw.FindBinary()
 	if binaryPath == "" {
 		response = "PicoClaw 未安装。"
 	} else {
-		cmd := exec.Command(binaryPath, "agent", "-m", content)
+		cmd := exec.Command(binaryPath, "agent", "-m", fullMessage)
 		cmd.Dir = a.picoclaw.GetConfigDir()
 		outputBytes, err := cmd.CombinedOutput()
 		if err != nil {

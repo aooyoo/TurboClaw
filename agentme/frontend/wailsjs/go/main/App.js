@@ -22,8 +22,8 @@ export function ExecutePicoclawCommand(arg1, arg2) {
   return window['go']['main']['App']['ExecutePicoclawCommand'](arg1, arg2);
 }
 
-export function GetAIResponse(arg1) {
-  return window['go']['main']['App']['GetAIResponse'](arg1);
+export function GetAIResponse(arg1, arg2) {
+  return window['go']['main']['App']['GetAIResponse'](arg1, arg2);
 }
 
 export function GetConfig() {

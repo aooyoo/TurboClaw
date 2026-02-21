@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { cn } from '../lib/utils';
 import { ChatIcon, SkillsIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon } from './Icon';
+import { useI18n } from '../i18n/index';
 
 export interface SidebarProps {
   currentPage: 'chat' | 'skills' | 'settings';
@@ -25,6 +26,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCreateSession,
   onDeleteSession,
 }) => {
+  const { t } = useI18n();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const handleDelete = (e: React.MouseEvent, id: string) => {
@@ -91,19 +93,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className="px-2 py-2 flex flex-col gap-1">
         <NavItem
           icon={<ChatIcon size={16} />}
-          label="对话"
+          label={t('sidebar.chat')}
           active={currentPage === 'chat'}
           onClick={() => onPageChange('chat')}
         />
         <NavItem
           icon={<SkillsIcon size={16} />}
-          label="Skills"
+          label={t('sidebar.skills')}
           active={currentPage === 'skills'}
           onClick={() => onPageChange('skills')}
         />
         <NavItem
           icon={<SettingsIcon size={16} />}
-          label="设置"
+          label={t('sidebar.settings')}
           active={currentPage === 'settings'}
           onClick={() => onPageChange('settings')}
         />
@@ -113,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {currentPage === 'chat' && !collapsed && (
         <div className="flex-1 min-h-0 overflow-y-auto px-2 flex flex-col gap-0.5">
           <div className="text-small text-[var(--color-muted)] uppercase tracking-wide py-1">
-            会话历史
+            {t('sidebar.history')}
           </div>
           {sessions.map((session) => (
             <div
@@ -139,10 +141,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     ? 'text-red-500 opacity-100'
                     : 'text-[var(--color-muted)] opacity-0 group-hover:opacity-100 hover:text-red-500'
                 )}
-                title={confirmDeleteId === session.id ? '再次点击确认删除' : '删除会话'}
+                title={confirmDeleteId === session.id ? t('sidebar.confirmDeleteTitle') : t('sidebar.deleteTitle')}
               >
                 {confirmDeleteId === session.id ? (
-                  <span className="font-mono text-xs">确认?</span>
+                  <span className="font-mono text-xs">{t('sidebar.confirmDelete')}</span>
                 ) : (
                   <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6" />
@@ -156,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={onCreateSession}
             className="text-left px-2 py-1.5 text-sm font-mono text-[var(--color-accent)] hover:underline"
           >
-            + 新建会话
+            {t('sidebar.newSession')}
           </button>
         </div>
       )}

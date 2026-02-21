@@ -7,12 +7,14 @@ import remarkBreaks from 'remark-breaks';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Message } from '../types';
+import { useI18n } from '../i18n/index';
 
 export interface ChatMessageProps {
   message: Message;
 }
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+  const { t } = useI18n();
   const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
@@ -46,7 +48,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="text-small-strong uppercase tracking-wide">
-            {isUser ? '你' : 'TurboClaw'}
+            {isUser ? t('chat.you') : t('chat.bot')}
           </span>
           <span className="text-small text-[var(--color-muted)]">
             {formatTimestamp(message.timestamp)}
@@ -55,7 +57,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             <button
               onClick={handleCopy}
               className="ml-auto text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors"
-              title={copied ? '已复制' : '复制'}
+              title={copied ? t('chat.copied') : t('chat.copy')}
             >
               {copied ? (
                 <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

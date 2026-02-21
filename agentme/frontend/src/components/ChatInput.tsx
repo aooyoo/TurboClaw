@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { SendIcon, PaperclipIcon, PlusIcon } from './Icon';
 import { cn } from '../lib/utils';
 import { SelectFiles } from '../../wailsjs/go/main/App';
+import { useI18n } from '../i18n/index';
 
 export interface ChatInputProps {
   onSend: (content: string, files: string[]) => void;
@@ -12,8 +13,8 @@ export interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
   disabled = false,
-  placeholder = '输入消息...（Enter 发送，Shift+Enter 换行）'
 }) => {
+  const { t } = useI18n();
   const [content, setContent] = useState('');
   const [files, setFiles] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -100,7 +101,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder}
+          placeholder={t('chat.inputPlaceholder')}
           disabled={disabled}
           className={cn(
             'flex-1 font-mono text-sm bg-transparent',
@@ -157,7 +158,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             title="更多选项"
           >
             <PlusIcon size={14} />
-            <span>更多</span>
+            <span>{t('chat.more')}</span>
           </button>
         </div>
       </div>

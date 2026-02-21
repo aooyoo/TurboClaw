@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { cn } from '../lib/utils';
+import { useI18n } from '../i18n/index';
 
 interface Skill {
     name: string;
@@ -14,6 +15,7 @@ interface SkillsPageProps {
 }
 
 export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
+    const { t } = useI18n();
     const [skills, setSkills] = useState<Skill[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string>();
@@ -29,7 +31,7 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
             const result = await onLoadSkills();
             setSkills(result || []);
         } catch (err) {
-            setError('无法加载 Skills 列表');
+            setError(t('skills.loadError'));
             console.error(err);
         } finally {
             setLoading(false);
@@ -41,16 +43,16 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
             <div className="max-w-3xl mx-auto">
                 {/* Header */}
                 <div className="mb-6">
-                    <h1 className="font-mono text-h2 text-[var(--color-fg)] mb-1">Skills</h1>
+                    <h1 className="font-mono text-h2 text-[var(--color-fg)] mb-1">{t('skills.title')}</h1>
                     <p className="text-body text-[var(--color-dim)]">
-                        已安装的 Agent 技能模块，为 AI 提供额外的能力
+                        {t('skills.subtitle')}
                     </p>
                 </div>
 
                 {/* Loading */}
                 {loading && (
                     <div className="text-center py-12 text-[var(--color-dim)]">
-                        <div className="animate-pulse font-mono">加载中...</div>
+                        <div className="animate-pulse font-mono">{t('skills.loading')}</div>
                     </div>
                 )}
 
@@ -66,8 +68,8 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
                     <div className="grid gap-3">
                         {skills.length === 0 ? (
                             <div className="text-center py-12 text-[var(--color-dim)]">
-                                <p className="font-mono text-lg mb-2">暂无 Skills</p>
-                                <p className="text-sm">运行 <code className="bg-[var(--color-border)] px-1.5 py-0.5 rounded">picoclaw onboard</code> 初始化</p>
+                                <p className="font-mono text-lg mb-2">{t('skills.empty')}</p>
+                                <p className="text-sm"><code className="bg-[var(--color-border)] px-1.5 py-0.5 rounded">{t('skills.emptyHint')}</code></p>
                             </div>
                         ) : (
                             skills.map((skill) => (
@@ -79,12 +81,9 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
                                         'hover:border-[var(--color-accent)]/40 hover:shadow-sm'
                                     )}
                                 >
-                                    {/* Emoji Icon */}
                                     <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[var(--color-border)] flex items-center justify-center text-xl">
                                         {skill.emoji}
                                     </div>
-
-                                    {/* Content */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1">
                                             <h3 className="font-mono text-sm font-bold text-[var(--color-fg)]">
@@ -95,11 +94,9 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
                                             </span>
                                         </div>
                                         <p className="text-sm text-[var(--color-dim)] leading-relaxed">
-                                            {skill.description || '无描述'}
+                                            {skill.description || t('skills.noDesc')}
                                         </p>
                                     </div>
-
-                                    {/* Status */}
                                     <div className="flex-shrink-0">
                                         <span className={cn(
                                             'inline-flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-full',
@@ -111,7 +108,7 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
                                                 'w-1.5 h-1.5 rounded-full',
                                                 skill.enabled ? 'bg-green-500' : 'bg-[var(--color-muted)]'
                                             )} />
-                                            {skill.enabled ? '已启用' : '已禁用'}
+                                            {skill.enabled ? t('skills.enabled') : t('skills.disabled')}
                                         </span>
                                     </div>
                                 </div>
@@ -120,11 +117,10 @@ export const SkillsPage: React.FC<SkillsPageProps> = ({ onLoadSkills }) => {
                     </div>
                 )}
 
-                {/* Footer info */}
                 {!loading && skills.length > 0 && (
                     <div className="mt-6 pt-4 border-t border-[var(--color-border)]">
                         <p className="text-small text-[var(--color-muted)]">
-                            共 {skills.length} 个 Skills · 存储于 ~/.picoclaw/workspace/skills/
+                            {t('skills.total', { count: skills.length })} · {t('skills.storagePath')}
                         </p>
                     </div>
                 )}

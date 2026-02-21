@@ -12,7 +12,7 @@ export function DeleteSession(arg1:string):Promise<void>;
 
 export function ExecutePicoclawCommand(arg1:string,arg2:Array<string>):Promise<string>;
 
-export function GetAIResponse(arg1:string):Promise<main.ChatSession>;
+export function GetAIResponse(arg1:string,arg2:Array<string>):Promise<main.ChatSession>;
 
 export function GetConfig():Promise<main.Config>;
 
