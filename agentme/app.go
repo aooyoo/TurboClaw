@@ -456,6 +456,9 @@ func (a *App) startup(ctx context.Context) {
 	a.picoclaw = NewPicoclawManager()
 	a.chatManager = NewChatManager()
 
+	// Auto-onboard: run picoclaw onboard if workspace doesn't exist yet
+	a.autoOnboard()
+
 	// Load config
 	config, err := LoadConfig()
 	if err != nil {
@@ -465,6 +468,35 @@ func (a *App) startup(ctx context.Context) {
 
 	// Load existing sessions
 	a.chatManager.LoadSessions()
+}
+
+// autoOnboard runs 'picoclaw onboard' for first-time users
+// Skip if ~/.picoclaw/workspace already exists
+func (a *App) autoOnboard() {
+	homeDir, _ := os.UserHomeDir()
+	workspaceDir := filepath.Join(homeDir, ".picoclaw", "workspace")
+
+	// If workspace exists, user has already onboarded
+	if _, err := os.Stat(workspaceDir); err == nil {
+		return
+	}
+
+	// Find picoclaw binary
+	binaryPath, err := a.picoclaw.FindBinary()
+	if err != nil || binaryPath == "" {
+		return
+	}
+
+	// Run onboard (non-interactive, auto-creates config + workspace)
+	cmd := exec.Command(binaryPath, "onboard")
+	cmd.Dir = homeDir
+	cmd.Stdin = strings.NewReader("y\n") // Auto-confirm if config exists
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Printf("Auto-onboard warning: %v\n%s\n", err, string(output))
+	} else {
+		fmt.Printf("Auto-onboard completed: %s\n", string(output))
+	}
 }
 
 // GetConfig returns the current configuration

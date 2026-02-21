@@ -22,8 +22,8 @@ export default function App() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>();
   const [config, setConfig] = useState<Config>({
-    model_provider: 'openclaw',
-    model_name: 'gpt-4o-mini',
+    model_provider: 'zhipu',
+    model_name: 'glm-4.7',
     extra_settings: {},
   });
   const [picoclawStatus, setPicoclawStatus] = useState<PicoclawStatus | undefined>();
