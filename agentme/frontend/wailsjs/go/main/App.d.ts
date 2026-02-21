@@ -26,7 +26,7 @@ export function GetSession(arg1:string):Promise<main.ChatSession>;
 
 export function GetSessions():Promise<Array<main.ChatSession>>;
 
-export function GetSkills():Promise<Array<Record<string, any>>>;
+export function GetSkills():Promise<Array<main.Skill>>;
 
 export function InstallSkill(arg1:string):Promise<string>;
 

@@ -687,16 +687,73 @@ func (a *App) Onboard(telegramToken string) (string, error) {
 	return a.picoclaw.Execute("onboard", telegramToken)
 }
 
-// GetSkills returns available skills
-func (a *App) GetSkills() ([]map[string]interface{}, error) {
-	output, err := a.picoclaw.Execute("skills", "list")
+// Skill represents a picoclaw skill
+type Skill struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Source      string `json:"source"`
+	Emoji       string `json:"emoji"`
+	Enabled     bool   `json:"enabled"`
+}
+
+// GetSkills returns available skills by reading the workspace skills directory
+func (a *App) GetSkills() ([]Skill, error) {
+	homeDir, _ := os.UserHomeDir()
+	skillsDir := filepath.Join(homeDir, ".picoclaw", "workspace", "skills")
+
+	entries, err := os.ReadDir(skillsDir)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot read skills directory: %w", err)
 	}
 
-	// Parse output (simplified)
-	var skills []map[string]interface{}
-	json.Unmarshal([]byte(output), &skills)
+	var skills []Skill
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+
+		skillName := entry.Name()
+		skillMD := filepath.Join(skillsDir, skillName, "SKILL.md")
+		data, err := os.ReadFile(skillMD)
+		if err != nil {
+			continue
+		}
+
+		content := string(data)
+		skill := Skill{
+			Name:    skillName,
+			Source:  "workspace",
+			Enabled: true,
+			Emoji:   "🔧",
+		}
+
+		// Parse YAML frontmatter between --- markers
+		if strings.HasPrefix(content, "---") {
+			parts := strings.SplitN(content[3:], "---", 2)
+			if len(parts) >= 1 {
+				frontmatter := parts[0]
+				for _, line := range strings.Split(frontmatter, "\n") {
+					line = strings.TrimSpace(line)
+					if strings.HasPrefix(line, "description:") {
+						desc := strings.TrimPrefix(line, "description:")
+						desc = strings.TrimSpace(desc)
+						desc = strings.Trim(desc, "\"'")
+						skill.Description = desc
+					}
+					if strings.HasPrefix(line, "metadata:") {
+						meta := strings.TrimPrefix(line, "metadata:")
+						meta = strings.TrimSpace(meta)
+						emojiPattern := regexp.MustCompile(`"emoji"\s*:\s*"([^"]+)"`)
+						if matches := emojiPattern.FindStringSubmatch(meta); len(matches) > 1 {
+							skill.Emoji = matches[1]
+						}
+					}
+				}
+			}
+		}
+
+		skills = append(skills, skill)
+	}
 
 	return skills, nil
 }

@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import './index.css';
 import { Sidebar } from './components/Sidebar';
 import { ChatPage } from './pages/ChatPage';
+import { SkillsPage } from './pages/SkillsPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { ChatSession, Config, PicoclawStatus } from './types';
 import {
   GetSessions,
   GetConfig,
   GetPicoclawStatus,
+  GetSkills,
   CreateSession,
   SetCurrentSession,
   DeleteSession,
@@ -17,7 +19,7 @@ import {
 } from '../wailsjs/go/main/App';
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState<'chat' | 'settings'>('chat');
+  const [currentPage, setCurrentPage] = useState<'chat' | 'skills' | 'settings'>('chat');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSessionId, setCurrentSessionId] = useState<string>();
@@ -167,6 +169,13 @@ export default function App() {
               onDeleteSession={handleDeleteSession}
               onRenameSession={() => { }}
               loading={loading}
+            />
+          ) : currentPage === 'skills' ? (
+            <SkillsPage
+              onLoadSkills={async () => {
+                const result = await GetSkills() as any;
+                return result || [];
+              }}
             />
           ) : (
             <SettingsPage

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { cn } from '../lib/utils';
-import { ChatIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon } from './Icon';
+import { ChatIcon, SkillsIcon, SettingsIcon, ChevronLeftIcon, ChevronRightIcon } from './Icon';
 
 export interface SidebarProps {
-  currentPage: 'chat' | 'settings';
-  onPageChange: (page: 'chat' | 'settings') => void;
+  currentPage: 'chat' | 'skills' | 'settings';
+  onPageChange: (page: 'chat' | 'skills' | 'settings') => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
   sessions?: Array<{ id: string; name: string }>;
@@ -94,6 +94,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
           label="对话"
           active={currentPage === 'chat'}
           onClick={() => onPageChange('chat')}
+        />
+        <NavItem
+          icon={<SkillsIcon size={16} />}
+          label="Skills"
+          active={currentPage === 'skills'}
+          onClick={() => onPageChange('skills')}
         />
         <NavItem
           icon={<SettingsIcon size={16} />}

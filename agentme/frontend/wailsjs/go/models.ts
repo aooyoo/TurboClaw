@@ -79,6 +79,27 @@ export namespace main {
 	        this.extra_settings = source["extra_settings"];
 	    }
 	}
+	
+	export class Skill {
+	    name: string;
+	    description: string;
+	    source: string;
+	    emoji: string;
+	    enabled: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Skill(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.description = source["description"];
+	        this.source = source["source"];
+	        this.emoji = source["emoji"];
+	        this.enabled = source["enabled"];
+	    }
+	}
 
 }
 
