@@ -33,7 +33,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
       isUser ? '' : 'bg-[var(--color-border)]/30'
     )}>
       <div className={cn(
-        'flex-shrink-0 flex items-center justify-center rounded-lg',
+        'flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg',
         isUser ? 'bg-[var(--color-btn-bg)]' : 'bg-[var(--color-accent)]'
       )}>
         {isUser ? (
