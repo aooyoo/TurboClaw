@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { SendIcon, PaperclipIcon, PlusIcon } from './Icon';
+import { SendIcon, PaperclipIcon, PlusIcon, LoaderIcon, StopIcon } from './Icon';
 import { cn } from '../lib/utils';
 import { SelectFiles } from '../../wailsjs/go/main/App';
 import { useI18n } from '../i18n/index';
@@ -129,20 +129,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           </svg>
         </button>
 
+        {/* Loading Spinner placed to the left of the send button when disabled(loading) */}
+        {disabled && (
+          <div className="flex items-center justify-center w-10 h-10 text-[var(--color-accent)] animate-spin">
+            <LoaderIcon size={18} />
+          </div>
+        )}
+
         <button
           onClick={handleSubmit}
           disabled={disabled || (!content.trim() && files.length === 0)}
           className={cn(
             'flex-shrink-0 flex items-center justify-center',
             'w-10 h-10 rounded-lg transition-colors',
-            'disabled:opacity-40 disabled:cursor-not-allowed',
-            (!content.trim() && files.length === 0)
+            'disabled:opacity-80 disabled:cursor-not-allowed',
+            (!content.trim() && files.length === 0 && !disabled)
               ? 'bg-[var(--color-border)] text-[var(--color-muted)]'
-              : 'bg-[var(--color-accent)] text-white hover:opacity-90'
+              : 'bg-[var(--color-accent)] text-white hover:opacity-90',
+            disabled && 'bg-red-500 hover:bg-red-600 text-white' // Stop button styling
           )}
-          title="发送"
+          title={disabled ? "停止" : "发送"}
         >
-          <SendIcon size={18} />
+          {disabled ? <StopIcon size={14} /> : <SendIcon size={18} />}
         </button>
       </div>
 

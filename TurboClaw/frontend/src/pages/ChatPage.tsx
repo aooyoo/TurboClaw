@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { ChatMessage } from '../components/ChatMessage';
 import { ChatInput } from '../components/ChatInput';
 import { Card } from '../components/Card';
@@ -29,12 +29,21 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 }) => {
   const { t } = useI18n();
   const [mounted, setMounted] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const currentSession = sessions.find(s => s.id === currentSessionId);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [currentSession?.messages, loading]);
 
   const EmptyState = () => (
     <div className="flex-1 flex items-center justify-center">
@@ -115,6 +124,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
             {currentSession.messages.map((message) => (
               <ChatMessage key={message.id} message={message} />
             ))}
+            <div ref={messagesEndRef} />
           </div>
         ) : (
           <WelcomeState />
