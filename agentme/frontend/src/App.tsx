@@ -10,6 +10,8 @@ import {
   GetConfig,
   GetPicoclawStatus,
   GetSkills,
+  CheckPathsInWorkspace,
+  RequestPathAuthorization,
   CreateSession,
   SetCurrentSession,
   DeleteSession,
@@ -104,11 +106,20 @@ export default function App() {
     }
   };
 
-  const handleSendMessage = async (content: string, files: string[]) => {
-    if (!content && files.length === 0) return;
+  // Extract file paths from message text
+  const extractPaths = (text: string): string[] => {
+    const pathRegex = /(?:^|\s)((?:\/[\w.\-]+)+\/?|~\/[\w.\-/]+)/g;
+    const paths: string[] = [];
+    let match;
+    while ((match = pathRegex.exec(text)) !== null) {
+      paths.push(match[1].trim());
+    }
+    return paths;
+  };
 
+  // The actual send logic
+  const doSend = async (content: string, files: string[]) => {
     try {
-      // Phase 1: Add user message and update UI immediately
       const sessionWithUserMsg = await SendMessage(content, files) as unknown as ChatSession;
       if (sessionWithUserMsg) {
         setSessions(prev => prev.map(s =>
@@ -116,7 +127,6 @@ export default function App() {
         ));
       }
 
-      // Phase 2: Get AI response asynchronously
       setLoading(true);
       const sessionWithAIResponse = await GetAIResponse(content, files) as unknown as ChatSession;
       if (sessionWithAIResponse) {
@@ -129,6 +139,33 @@ export default function App() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSendMessage = async (content: string, files: string[]) => {
+    if (!content && files.length === 0) return;
+
+    // Collect all paths: attached files + paths mentioned in text
+    const textPaths = extractPaths(content);
+    const allPaths = [...files, ...textPaths];
+
+    if (allPaths.length > 0) {
+      try {
+        // Check which paths are outside the workspace
+        const outsidePaths = await CheckPathsInWorkspace(allPaths) as unknown as string[];
+        if (outsidePaths && outsidePaths.length > 0) {
+          // Show NATIVE system dialog for authorization
+          const authorized = await RequestPathAuthorization(outsidePaths) as unknown as boolean;
+          if (!authorized) {
+            return; // User denied access
+          }
+        }
+      } catch (err) {
+        console.error('Failed to check paths:', err);
+      }
+    }
+
+    // Authorized or no outside paths — send
+    await doSend(content, files);
   };
 
   const handleSaveConfig = async (newConfig: Config) => {

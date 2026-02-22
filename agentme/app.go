@@ -445,6 +445,48 @@ func SaveConfig(config *Config) error {
 	return os.WriteFile(configFile, data, 0644)
 }
 
+// GetChannelConfig reads channel configs from picoclaw's config.json
+func (a *App) GetChannelConfig() map[string]interface{} {
+	configPath := filepath.Join(a.picoclaw.GetConfigDir(), "config.json")
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+
+	var fullConfig map[string]interface{}
+	if err := json.Unmarshal(data, &fullConfig); err != nil {
+		return map[string]interface{}{}
+	}
+
+	channels, ok := fullConfig["channels"].(map[string]interface{})
+	if !ok {
+		return map[string]interface{}{}
+	}
+	return channels
+}
+
+// SaveChannelConfig writes channel configs to picoclaw's config.json
+func (a *App) SaveChannelConfig(channels map[string]interface{}) error {
+	configPath := filepath.Join(a.picoclaw.GetConfigDir(), "config.json")
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return err
+	}
+
+	var fullConfig map[string]interface{}
+	if err := json.Unmarshal(data, &fullConfig); err != nil {
+		return err
+	}
+
+	fullConfig["channels"] = channels
+
+	newData, err := json.MarshalIndent(fullConfig, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(configPath, newData, 0644)
+}
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
@@ -458,6 +500,12 @@ func (a *App) startup(ctx context.Context) {
 
 	// Auto-onboard: run picoclaw onboard if workspace doesn't exist yet
 	a.autoOnboard()
+
+	// Ensure picoclaw can access files outside workspace
+	a.ensurePicoclawUnrestricted()
+
+	// Request file access permissions on first launch
+	a.requestStartupPermissions()
 
 	// Load config
 	config, err := LoadConfig()
@@ -496,6 +544,130 @@ func (a *App) autoOnboard() {
 		fmt.Printf("Auto-onboard warning: %v\n%s\n", err, string(output))
 	} else {
 		fmt.Printf("Auto-onboard completed: %s\n", string(output))
+	}
+}
+
+// ensurePicoclawUnrestricted sets restrict_to_workspace=false in picoclaw config
+// so the agent can access and operate on files outside ~/.picoclaw/workspace
+func (a *App) ensurePicoclawUnrestricted() {
+	configPath := filepath.Join(a.picoclaw.GetConfigDir(), "config.json")
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		return // No config file yet
+	}
+
+	var configMap map[string]interface{}
+	if err := json.Unmarshal(data, &configMap); err != nil {
+		return
+	}
+
+	// Navigate to agents.defaults.restrict_to_workspace
+	agents, ok := configMap["agents"].(map[string]interface{})
+	if !ok {
+		return
+	}
+	defaults, ok := agents["defaults"].(map[string]interface{})
+	if !ok {
+		return
+	}
+
+	// Check if already false
+	if restrict, ok := defaults["restrict_to_workspace"].(bool); ok && !restrict {
+		return // Already unrestricted
+	}
+
+	// Set to false
+	defaults["restrict_to_workspace"] = false
+
+	// Write back
+	newData, err := json.MarshalIndent(configMap, "", "  ")
+	if err != nil {
+		return
+	}
+	os.WriteFile(configPath, newData, 0644)
+	fmt.Println("Picoclaw workspace restriction disabled.")
+}
+
+// PermissionStatus represents the status of a single permission
+type PermissionStatus struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Status string `json:"status"` // "granted", "denied", "unknown"
+}
+
+// requestStartupPermissions checks permissions and prompts the user on first launch
+func (a *App) requestStartupPermissions() {
+	homeDir, _ := os.UserHomeDir()
+	flagFile := filepath.Join(homeDir, ".turboclaw", "permissions_requested")
+
+	// Only run on first launch
+	if _, err := os.Stat(flagFile); err == nil {
+		return
+	}
+
+	// Test file access by trying to read ~/Desktop
+	desktopDir := filepath.Join(homeDir, "Desktop")
+	_, err := os.ReadDir(desktopDir)
+	if err != nil && os.IsPermission(err) {
+		// TCC is blocking — show dialog and open settings
+		runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:    runtime.InfoDialog,
+			Title:   "TurboClaw 需要文件访问权限",
+			Message: "为了让 Agent 能够读取和分析您的本地文件，TurboClaw 需要「文件和文件夹」访问权限。\n\n点击确定后将打开系统设置，请在「隐私与安全性 → 文件和文件夹」中授予 TurboClaw 访问权限。",
+		})
+		exec.Command("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders").Run()
+	}
+
+	// Mark as requested (create flag file)
+	os.MkdirAll(filepath.Dir(flagFile), 0755)
+	os.WriteFile(flagFile, []byte("1"), 0644)
+}
+
+// CheckPermissions returns the status of all permissions for the Settings UI
+func (a *App) CheckPermissions() []PermissionStatus {
+	homeDir, _ := os.UserHomeDir()
+
+	permissions := []PermissionStatus{
+		{ID: "files-folders", Name: "Files & Folders"},
+		{ID: "desktop", Name: "Desktop"},
+		{ID: "documents", Name: "Documents"},
+		{ID: "downloads", Name: "Downloads"},
+	}
+
+	testDirs := map[string]string{
+		"files-folders": filepath.Join(homeDir, "Desktop"), // General test
+		"desktop":       filepath.Join(homeDir, "Desktop"),
+		"documents":     filepath.Join(homeDir, "Documents"),
+		"downloads":     filepath.Join(homeDir, "Downloads"),
+	}
+
+	for i, perm := range permissions {
+		dir := testDirs[perm.ID]
+		_, err := os.ReadDir(dir)
+		if err == nil {
+			permissions[i].Status = "granted"
+		} else if os.IsPermission(err) {
+			permissions[i].Status = "denied"
+		} else {
+			permissions[i].Status = "unknown"
+		}
+	}
+
+	return permissions
+}
+
+// OpenPermissionSettings opens macOS System Settings to a specific privacy pane
+func (a *App) OpenPermissionSettings(permID string) {
+	urls := map[string]string{
+		"files-folders": "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders",
+		"desktop":       "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders",
+		"documents":     "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders",
+		"downloads":     "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders",
+	}
+
+	if url, ok := urls[permID]; ok {
+		exec.Command("open", url).Run()
 	}
 }
 
@@ -637,20 +809,158 @@ func extractCleanResponse(output string) string {
 	return "未收到响应，请检查配置。"
 }
 
+// enrichMessageWithContext detects path/directory references in the message
+// and pre-reads their content, since picoclaw may not have filesystem access.
+func (a *App) enrichMessageWithContext(message string) string {
+	homeDir, _ := os.UserHomeDir()
+
+	// Map of keywords to directories
+	dirKeywords := map[string]string{
+		"桌面":         filepath.Join(homeDir, "Desktop"),
+		"desktop":    filepath.Join(homeDir, "Desktop"),
+		"文档":         filepath.Join(homeDir, "Documents"),
+		"documents":  filepath.Join(homeDir, "Documents"),
+		"下载":         filepath.Join(homeDir, "Downloads"),
+		"downloads":  filepath.Join(homeDir, "Downloads"),
+	}
+
+	lowerMsg := strings.ToLower(message)
+	var contextParts []string
+	addedDirs := map[string]bool{}
+
+	// Check for keyword matches
+	for keyword, dirPath := range dirKeywords {
+		if strings.Contains(lowerMsg, strings.ToLower(keyword)) {
+			if addedDirs[dirPath] {
+				continue
+			}
+			addedDirs[dirPath] = true
+
+			entries, err := os.ReadDir(dirPath)
+			if err != nil {
+				contextParts = append(contextParts, fmt.Sprintf("[Directory: %s]\n(无法读取: %v)", dirPath, err))
+				continue
+			}
+
+			var listing []string
+			for _, entry := range entries {
+				info, _ := entry.Info()
+				if info != nil {
+					sizeStr := fmt.Sprintf("%d bytes", info.Size())
+					if info.IsDir() {
+						sizeStr = "dir"
+					}
+					listing = append(listing, fmt.Sprintf("  %s  %s  %s", info.Mode(), sizeStr, entry.Name()))
+				} else {
+					listing = append(listing, "  "+entry.Name())
+				}
+			}
+			contextParts = append(contextParts, fmt.Sprintf("[Directory: %s]\n%s", dirPath, strings.Join(listing, "\n")))
+		}
+	}
+
+	// Also detect explicit absolute paths like /Users/xxx/... or ~/...
+	pathRegex := regexp.MustCompile(`(?:^|\s)((?:/[\w.\-]+)+/?|~/[\w.\-/]+)`)
+	matches := pathRegex.FindAllStringSubmatch(message, -1)
+	for _, match := range matches {
+		p := strings.TrimSpace(match[1])
+		expanded := p
+		if strings.HasPrefix(expanded, "~/") {
+			expanded = filepath.Join(homeDir, expanded[2:])
+		}
+
+		if addedDirs[expanded] {
+			continue
+		}
+
+		info, err := os.Stat(expanded)
+		if err != nil {
+			continue // Path doesn't exist, skip
+		}
+
+		addedDirs[expanded] = true
+
+		if info.IsDir() {
+			entries, err := os.ReadDir(expanded)
+			if err != nil {
+				contextParts = append(contextParts, fmt.Sprintf("[Directory: %s]\n(无法读取: %v)", expanded, err))
+				continue
+			}
+			var listing []string
+			for _, entry := range entries {
+				eInfo, _ := entry.Info()
+				if eInfo != nil {
+					sizeStr := fmt.Sprintf("%d bytes", eInfo.Size())
+					if eInfo.IsDir() {
+						sizeStr = "dir"
+					}
+					listing = append(listing, fmt.Sprintf("  %s  %s  %s", eInfo.Mode(), sizeStr, entry.Name()))
+				} else {
+					listing = append(listing, "  "+entry.Name())
+				}
+			}
+			contextParts = append(contextParts, fmt.Sprintf("[Directory: %s]\n%s", expanded, strings.Join(listing, "\n")))
+		} else {
+			// It's a file — read it if small enough
+			if info.Size() <= 100*1024 {
+				data, err := os.ReadFile(expanded)
+				if err == nil {
+					contextParts = append(contextParts, fmt.Sprintf("[File: %s]\n```\n%s\n```", expanded, string(data)))
+				}
+			}
+		}
+	}
+
+	if len(contextParts) > 0 {
+		return message + "\n\n--- 以下是系统预读取的本地文件/目录信息 ---\n\n" + strings.Join(contextParts, "\n\n")
+	}
+	return message
+}
+
 // GetAIResponse calls picoclaw to get AI response for the given content,
 // then adds the response to the current session
 func (a *App) GetAIResponse(content string, files []string) (*ChatSession, error) {
 	var response string
 
-	// Build the full message with file references
+	// Build the full message with file contents
 	fullMessage := content
 	if len(files) > 0 {
-		fileRefs := "\n\n[Attached files]:\n"
 		for _, f := range files {
-			fileRefs += "- " + f + "\n"
+			data, err := os.ReadFile(f)
+			if err != nil {
+				fullMessage += fmt.Sprintf("\n\n[File: %s]\n(读取失败: %v)", f, err)
+				continue
+			}
+
+			// Check if file is too large (>100KB) or binary
+			if len(data) > 100*1024 {
+				fullMessage += fmt.Sprintf("\n\n[File: %s]\n(文件过大，共 %d 字节，仅提供路径)", f, len(data))
+				continue
+			}
+
+			// Simple binary detection: check for null bytes in first 512 bytes
+			isBinary := false
+			checkLen := len(data)
+			if checkLen > 512 {
+				checkLen = 512
+			}
+			for _, b := range data[:checkLen] {
+				if b == 0 {
+					isBinary = true
+					break
+				}
+			}
+
+			if isBinary {
+				fullMessage += fmt.Sprintf("\n\n[File: %s]\n(二进制文件，共 %d 字节，仅提供路径)", f, len(data))
+			} else {
+				fullMessage += fmt.Sprintf("\n\n[File: %s]\n```\n%s\n```", f, string(data))
+			}
 		}
-		fullMessage += fileRefs
 	}
+
+	// Enrich message with local context: detect path references and pre-read them
+	fullMessage = a.enrichMessageWithContext(fullMessage)
 
 	// Check if picoclaw is available
 	binaryPath, _ := a.picoclaw.FindBinary()
@@ -684,6 +994,121 @@ func (a *App) GetPicoclawStatus() map[string]interface{} {
 		"configDir":  a.picoclaw.GetConfigDir(),
 		"workspace":  a.picoclaw.GetWorkspaceDir(),
 	}
+}
+
+// CheckPathsInWorkspace checks which paths are outside the workspace
+// Returns list of paths that are outside the workspace
+func (a *App) CheckPathsInWorkspace(paths []string) []string {
+	workspaceDir := a.picoclaw.GetWorkspaceDir()
+	homeDir, _ := os.UserHomeDir()
+
+	var outsidePaths []string
+	for _, p := range paths {
+		// Expand ~ prefix
+		expanded := p
+		if strings.HasPrefix(expanded, "~/") {
+			expanded = filepath.Join(homeDir, expanded[2:])
+		}
+
+		// Clean and resolve the path
+		absPath, err := filepath.Abs(expanded)
+		if err != nil {
+			continue
+		}
+
+		// Check if it's inside the workspace
+		if !strings.HasPrefix(absPath, workspaceDir) {
+			outsidePaths = append(outsidePaths, p)
+		}
+	}
+
+	return outsidePaths
+}
+
+// RequestPathAuthorization checks if the app has actual file system access
+// and prompts the user to grant permission if needed.
+// Follows Clawdy's approach: test actual read, then open System Settings if blocked by TCC.
+func (a *App) RequestPathAuthorization(paths []string) bool {
+	if len(paths) == 0 {
+		return true
+	}
+
+	// Step 1: Test actual file access for each path to detect TCC blocks
+	var blockedPaths []string
+	var accessiblePaths []string
+	for _, p := range paths {
+		expanded := p
+		homeDir, _ := os.UserHomeDir()
+		if strings.HasPrefix(expanded, "~/") {
+			expanded = filepath.Join(homeDir, expanded[2:])
+		}
+		absPath, err := filepath.Abs(expanded)
+		if err != nil {
+			continue
+		}
+
+		// Try to stat the file/directory to see if TCC blocks us
+		_, err = os.Stat(absPath)
+		if err != nil {
+			if os.IsPermission(err) {
+				blockedPaths = append(blockedPaths, p)
+			}
+			// Other errors (file not found etc.) are fine — agent will handle
+		} else {
+			accessiblePaths = append(accessiblePaths, p)
+		}
+	}
+
+	// Step 2: If TCC blocks any path, open System Settings
+	if len(blockedPaths) > 0 {
+		pathList := strings.Join(blockedPaths, "\n  • ")
+		message := fmt.Sprintf(
+			"macOS 阻止了以下路径的访问：\n\n  • %s\n\n"+
+				"需要在「系统设置 → 隐私与安全性 → 文件和文件夹」中授予 TurboClaw 访问权限。\n\n"+
+				"点击「打开设置」前往系统设置。",
+			pathList,
+		)
+
+		result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:          runtime.WarningDialog,
+			Title:         "需要文件访问权限",
+			Message:       message,
+			DefaultButton: "打开设置",
+			Buttons:       []string{"打开设置", "取消"},
+		})
+
+		if err != nil || result != "打开设置" {
+			return false
+		}
+
+		// Open macOS System Settings → Privacy → Files and Folders
+		exec.Command("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders").Run()
+		return false // User needs to grant permission and retry
+	}
+
+	// Step 3: All paths are accessible but outside workspace — confirm with user
+	if len(accessiblePaths) > 0 {
+		pathList := strings.Join(accessiblePaths, "\n  • ")
+		message := fmt.Sprintf(
+			"Agent 请求访问以下工作区外的路径：\n\n  • %s\n\n是否授权访问？",
+			pathList,
+		)
+
+		result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+			Type:          runtime.QuestionDialog,
+			Title:         "路径访问授权",
+			Message:       message,
+			DefaultButton: "No",
+			Buttons:       []string{"Yes", "No"},
+		})
+
+		if err != nil {
+			return false
+		}
+		return result == "Yes"
+	}
+
+	return true
 }
 
 // ExecutePicoclawCommand executes a picoclaw command

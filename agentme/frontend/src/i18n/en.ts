@@ -64,9 +64,10 @@ const en: Record<TranslationKeys, string> = {
     'settings.about.title': 'About',
     'settings.about.desc': 'TurboClaw is a local Agent client that makes it easy to manage and use your personal AI assistant.',
     'settings.about.features': 'Key features:',
-    'settings.about.feature1': 'Chat with AI assistant',
-    'settings.about.feature2': 'File upload and analysis',
-    'settings.about.feature3': 'Multi-session management',
+    'settings.about.feature1': 'Unique personality and long-term memory, active heartbeat mechanism, scheduled tasks',
+    'settings.about.feature2': 'Local file access, editing, organization, system-level command line permissions',
+    'settings.about.feature3': 'Multi-session management, multi-model support, multi-language support',
+    'settings.about.feature4': 'Telegram remote control, skills marketplace, plugin system',
     'settings.language': 'Language',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',
@@ -76,6 +77,35 @@ const en: Record<TranslationKeys, string> = {
     'error.picoNotInstalled': 'PicoClaw is not installed.',
     'error.noResponse': 'No response received. Please check your configuration.',
     'error.picoFailed': 'PicoClaw execution failed',
+
+    // Authorization
+    'auth.title': 'Path Authorization',
+    'auth.message': 'The following file paths are outside the workspace. The Agent will gain access to these paths:',
+    'auth.allow': 'Authorize',
+    'auth.deny': 'Cancel',
+
+    // Permissions
+    'permissions.title': 'Permissions',
+    'permissions.desc': 'Manage TurboClaw system permissions. The Agent needs these to access your files.',
+    'permissions.granted': 'Granted',
+    'permissions.denied': 'Denied',
+    'permissions.unknown': 'Unknown',
+    'permissions.openSettings': 'Open Settings',
+    'permissions.refresh': 'Refresh',
+
+    // Channels
+    'channels.title': 'Channels',
+    'channels.desc': 'Configure messaging channels for Agent to interact with you across platforms.',
+    'channels.enabled': 'Enabled',
+    'channels.disabled': 'Disabled',
+    'channels.token': 'Token',
+    'channels.proxy': 'Proxy',
+    'channels.appId': 'App ID',
+    'channels.appSecret': 'App Secret',
+    'channels.clientId': 'Client ID',
+    'channels.clientSecret': 'Client Secret',
+    'channels.save': 'Save Channels',
+    'channels.saved': 'Saved!',
 };
 
 export default en;

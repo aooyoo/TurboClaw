@@ -62,9 +62,10 @@ const zh = {
     'settings.about.title': '关于',
     'settings.about.desc': 'TurboClaw 是本地 Agent 客户端，让您能够方便地管理和使用本地 AI 助手。',
     'settings.about.features': '主要功能包括：',
-    'settings.about.feature1': '与 AI 助手进行对话',
-    'settings.about.feature2': '文件上传和分析',
-    'settings.about.feature3': '多会话管理',
+    'settings.about.feature1': '独特个性和长期记忆、主动性心跳机制、定时任务',
+    'settings.about.feature2': '本地文件访问、编辑、整理、系统级命令行权限',
+    'settings.about.feature3': '多会话管理、多模型支持、多语言支持',
+    'settings.about.feature4': 'Telegram 随身控制、技能市场、插件系统',
     'settings.language': '语言',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',
@@ -74,6 +75,35 @@ const zh = {
     'error.picoNotInstalled': 'PicoClaw 未安装。',
     'error.noResponse': '未收到响应，请检查配置。',
     'error.picoFailed': 'PicoClaw 执行失败',
+
+    // Authorization
+    'auth.title': '路径授权',
+    'auth.message': '以下文件路径在工作区外，Agent 将获得这些路径的访问权限：',
+    'auth.allow': '授权访问',
+    'auth.deny': '取消',
+
+    // Permissions
+    'permissions.title': '权限管理',
+    'permissions.desc': '管理 TurboClaw 的系统权限，Agent 需要这些权限来访问您的文件。',
+    'permissions.granted': '已授权',
+    'permissions.denied': '未授权',
+    'permissions.unknown': '未知',
+    'permissions.openSettings': '打开设置',
+    'permissions.refresh': '刷新状态',
+
+    // Channels
+    'channels.title': '通道配置',
+    'channels.desc': '配置消息通道，让 Agent 可以通过不同平台与您交互。',
+    'channels.enabled': '启用',
+    'channels.disabled': '未启用',
+    'channels.token': 'Token',
+    'channels.proxy': '代理',
+    'channels.appId': 'App ID',
+    'channels.appSecret': 'App Secret',
+    'channels.clientId': 'Client ID',
+    'channels.clientSecret': 'Client Secret',
+    'channels.save': '保存通道配置',
+    'channels.saved': '已保存!',
 };
 
 export default zh;

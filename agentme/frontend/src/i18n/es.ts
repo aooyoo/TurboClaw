@@ -63,10 +63,11 @@ const es: Record<TranslationKeys, string> = {
     'settings.saved': '¡Guardado!',
     'settings.about.title': 'Acerca de',
     'settings.about.desc': 'TurboClaw es un cliente de Agente local que facilita la gestión y uso de tu asistente personal de IA.',
-    'settings.about.features': 'Funciones principales:',
-    'settings.about.feature1': 'Chat con asistente de IA',
-    'settings.about.feature2': 'Carga y análisis de archivos',
-    'settings.about.feature3': 'Gestión de múltiples sesiones',
+    'settings.about.features': 'Características principales:',
+    'settings.about.feature1': 'Personalidad única y memoria a largo plazo, mecanismo de latido activo, tareas programadas',
+    'settings.about.feature2': 'Acceso a archivos locales, edición, organización, permisos de línea de comandos a nivel de sistema',
+    'settings.about.feature3': 'Gestión de múltiples sesiones, soporte para múltiples modelos, soporte para múltiples idiomas',
+    'settings.about.feature4': 'Control remoto por Telegram, mercado de skills, sistema de plugins',
     'settings.language': 'Idioma',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',
@@ -76,6 +77,35 @@ const es: Record<TranslationKeys, string> = {
     'error.picoNotInstalled': 'PicoClaw no está instalado.',
     'error.noResponse': 'No se recibió respuesta. Revisa la configuración.',
     'error.picoFailed': 'Error en la ejecución de PicoClaw',
+
+    // Authorization
+    'auth.title': 'Autorización de Ruta',
+    'auth.message': 'Las siguientes rutas están fuera del espacio de trabajo. El Agente obtendrá acceso a estas rutas:',
+    'auth.allow': 'Autorizar',
+    'auth.deny': 'Cancelar',
+
+    // Permissions
+    'permissions.title': 'Permisos',
+    'permissions.desc': 'Gestiona los permisos del sistema. El Agente necesita acceso a tus archivos.',
+    'permissions.granted': 'Concedido',
+    'permissions.denied': 'Denegado',
+    'permissions.unknown': 'Desconocido',
+    'permissions.openSettings': 'Abrir Ajustes',
+    'permissions.refresh': 'Actualizar',
+
+    // Channels
+    'channels.title': 'Canales',
+    'channels.desc': 'Configura canales de mensajería para interactuar con el Agente desde diferentes plataformas.',
+    'channels.enabled': 'Activo',
+    'channels.disabled': 'Inactivo',
+    'channels.token': 'Token',
+    'channels.proxy': 'Proxy',
+    'channels.appId': 'App ID',
+    'channels.appSecret': 'App Secret',
+    'channels.clientId': 'Client ID',
+    'channels.clientSecret': 'Client Secret',
+    'channels.save': 'Guardar Canales',
+    'channels.saved': '¡Guardado!',
 };
 
 export default es;
