@@ -114,8 +114,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Sessions Section - Only show on chat page */}
       {currentPage === 'chat' && !collapsed && (
         <div className="flex-1 min-h-0 overflow-y-auto px-2 flex flex-col gap-0.5">
-          <div className="text-small text-[var(--color-muted)] uppercase tracking-wide py-1">
-            {t('sidebar.history')}
+          <div className="flex items-center justify-between py-1 px-1">
+            <span className="text-small text-[var(--color-muted)] uppercase tracking-wide">
+              {t('sidebar.history')}
+            </span>
+            <button
+              onClick={onCreateSession}
+              className="text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors p-1 rounded hover:bg-[var(--color-border)]"
+              title={t('sidebar.newSession')}
+            >
+              <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
           </div>
           {sessions.map((session) => (
             <div
@@ -154,12 +166,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             </div>
           ))}
-          <button
-            onClick={onCreateSession}
-            className="text-left px-2 py-1.5 text-sm font-mono text-[var(--color-accent)] hover:underline"
-          >
-            {t('sidebar.newSession')}
-          </button>
         </div>
       )}
 

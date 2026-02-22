@@ -404,49 +404,106 @@ func NewConfig() *Config {
 	}
 }
 
-// LoadConfig loads config from file
+// LoadConfig loads config from picoclaw config.json
 func LoadConfig() (*Config, error) {
 	homeDir, _ := os.UserHomeDir()
-	configDir := filepath.Join(homeDir, ".turboclaw")
-	configFile := filepath.Join(configDir, "config.json")
+	configFile := filepath.Join(homeDir, ".picoclaw", "config.json")
 
 	data, err := os.ReadFile(configFile)
 	if err != nil {
 		if os.IsNotExist(err) {
-			os.MkdirAll(configDir, 0755)
-			config := NewConfig()
-			SaveConfig(config)
-			return config, nil
+			return NewConfig(), nil
 		}
 		return nil, err
 	}
 
-	var config Config
-	if err := json.Unmarshal(data, &config); err != nil {
+	var fullConfig map[string]interface{}
+	if err := json.Unmarshal(data, &fullConfig); err != nil {
 		return nil, err
 	}
 
-	if config.ExtraSettings == nil {
-		config.ExtraSettings = make(map[string]string)
+	config := NewConfig()
+
+	if agents, ok := fullConfig["agents"].(map[string]interface{}); ok {
+		if defaults, ok := agents["defaults"].(map[string]interface{}); ok {
+			if provider, ok := defaults["provider"].(string); ok {
+				config.ModelProvider = provider
+			}
+			if model, ok := defaults["model"].(string); ok {
+				config.ModelName = model
+			}
+		}
 	}
 
-	return &config, nil
+	if providers, ok := fullConfig["providers"].(map[string]interface{}); ok {
+		if providerCfg, ok := providers[config.ModelProvider].(map[string]interface{}); ok {
+			if apiKey, ok := providerCfg["api_key"].(string); ok {
+				config.ModelAPIKey = apiKey
+			}
+			if apiBase, ok := providerCfg["api_base"].(string); ok {
+				config.BaseURL = apiBase
+			}
+		}
+	}
+
+	return config, nil
 }
 
-// SaveConfig saves config to file
+// SaveConfig saves config to picoclaw config.json
 func SaveConfig(config *Config) error {
 	homeDir, _ := os.UserHomeDir()
-	configDir := filepath.Join(homeDir, ".turboclaw")
+	configDir := filepath.Join(homeDir, ".picoclaw")
 	configFile := filepath.Join(configDir, "config.json")
 
 	os.MkdirAll(configDir, 0755)
 
-	data, err := json.MarshalIndent(config, "", "  ")
+	data, err := os.ReadFile(configFile)
+	var fullConfig map[string]interface{}
+	if err == nil {
+		json.Unmarshal(data, &fullConfig)
+	}
+	if fullConfig == nil {
+		fullConfig = make(map[string]interface{})
+	}
+
+	// Update agents.defaults
+	agents, ok := fullConfig["agents"].(map[string]interface{})
+	if !ok {
+		agents = make(map[string]interface{})
+		fullConfig["agents"] = agents
+	}
+	defaults, ok := agents["defaults"].(map[string]interface{})
+	if !ok {
+		defaults = make(map[string]interface{})
+		agents["defaults"] = defaults
+	}
+	defaults["provider"] = config.ModelProvider
+	defaults["model"] = config.ModelName
+
+	// Update providers
+	providers, ok := fullConfig["providers"].(map[string]interface{})
+	if !ok {
+		providers = make(map[string]interface{})
+		fullConfig["providers"] = providers
+	}
+	providerCfg, ok := providers[config.ModelProvider].(map[string]interface{})
+	if !ok {
+		providerCfg = make(map[string]interface{})
+		providers[config.ModelProvider] = providerCfg
+	}
+	
+	// Only set if not empty, or overwrite if needed. Here we overwrite to match UI intent.
+	providerCfg["api_key"] = config.ModelAPIKey
+	if config.BaseURL != "" {
+		providerCfg["api_base"] = config.BaseURL
+	}
+
+	newData, err := json.MarshalIndent(fullConfig, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(configFile, data, 0644)
+	return os.WriteFile(configFile, newData, 0644)
 }
 
 // GetChannelConfig reads channel configs from picoclaw's config.json
