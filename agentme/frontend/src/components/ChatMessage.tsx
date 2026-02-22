@@ -53,21 +53,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           <span className="text-small text-[var(--color-muted)]">
             {formatTimestamp(message.timestamp)}
           </span>
-          {!isUser && (
-            <button
-              onClick={handleCopy}
-              className="ml-auto text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors"
-              title={copied ? t('chat.copied') : t('chat.copy')}
-            >
-              {copied ? (
-                <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <CopyIcon size={12} />
-              )}
-            </button>
-          )}
         </div>
 
         <div className="chat-markdown text-body text-[var(--color-fg)] break-words w-full overflow-hidden">
@@ -106,6 +91,29 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                 📎 {file}
               </div>
             ))}
+          </div>
+        )}
+
+        {!isUser && (
+          <div className="mt-2 flex">
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 text-xs font-mono text-[var(--color-muted)] hover:text-[var(--color-fg)] transition-colors py-1 px-2 -ml-2 rounded hover:bg-[var(--color-border)]/50"
+            >
+              {copied ? (
+                <>
+                  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {t('chat.copied')}
+                </>
+              ) : (
+                <>
+                  <CopyIcon size={12} />
+                  {t('chat.copy')}
+                </>
+              )}
+            </button>
           </div>
         )}
       </div>

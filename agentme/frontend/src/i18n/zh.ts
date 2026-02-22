@@ -60,7 +60,7 @@ const zh = {
     'settings.save': '保存设置',
     'settings.saved': '已保存!',
     'settings.about.title': '关于',
-    'settings.about.desc': 'TurboClaw 是本地 Agent 客户端，让您能够方便地管理和使用本地 AI 助手。',
+    'settings.about.desc': 'TurboClaw 是本地 Agent 客户端，可便捷管理和使用本地 AI 助手。',
     'settings.about.features': '主要功能包括：',
     'settings.about.feature1': '独特个性和长期记忆、主动性心跳机制、定时任务',
     'settings.about.feature2': '本地文件访问、编辑、整理、系统级命令行权限',

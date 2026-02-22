@@ -398,8 +398,8 @@ type Config struct {
 // NewConfig creates a new default config
 func NewConfig() *Config {
 	return &Config{
-		ModelProvider:   "openclaw",
-		ModelName:       "gpt-4o-mini",
+		ModelProvider:   "zhipu",
+		ModelName:       "glm-4.7-flash",
 		ExtraSettings:   make(map[string]string),
 	}
 }
