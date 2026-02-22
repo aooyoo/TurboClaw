@@ -1,9 +1,9 @@
 # Dependencies
-agentme/frontend/node_modules/
+TurboClaw/frontend/node_modules/
 
 # Build output
-agentme/build/bin/
-agentme/frontend/dist/
+TurboClaw/build/bin/
+TurboClaw/frontend/dist/
 
 # picoclaw binary and source
 picoclaw
@@ -27,5 +27,5 @@ picoclaw_src/
 
 # Temp files
 /tmp/
-agentme/agentme
+TurboClaw/TurboClaw
 prd.md

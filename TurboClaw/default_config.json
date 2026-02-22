@@ -1,0 +1,159 @@
+{
+  "agents": {
+    "defaults": {
+      "max_tokens": 8192,
+      "max_tool_iterations": 20,
+      "model": "glm-4.7-flash",
+      "provider": "zhipu",
+      "restrict_to_workspace": false,
+      "temperature": 0.7,
+      "workspace": "~/.picoclaw/workspace"
+    }
+  },
+  "channels": {
+    "dingtalk": {
+      "allow_from": [],
+      "client_id": "",
+      "client_secret": "",
+      "enabled": true
+    },
+    "discord": {
+      "allow_from": [],
+      "enabled": true,
+      "token": ""
+    },
+    "feishu": {
+      "allow_from": [],
+      "app_id": "",
+      "app_secret": "",
+      "enabled": true,
+      "encrypt_key": "",
+      "verification_token": ""
+    },
+    "line": {
+      "allow_from": [],
+      "channel_access_token": "",
+      "channel_secret": "",
+      "enabled": false,
+      "webhook_host": "0.0.0.0",
+      "webhook_path": "/webhook/line",
+      "webhook_port": 18791
+    },
+    "maixcam": {
+      "allow_from": [],
+      "enabled": false,
+      "host": "0.0.0.0",
+      "port": 18790
+    },
+    "onebot": {
+      "access_token": "",
+      "allow_from": [],
+      "enabled": false,
+      "group_trigger_prefix": [],
+      "reconnect_interval": 5,
+      "ws_url": "ws://127.0.0.1:3001"
+    },
+    "qq": {
+      "allow_from": [],
+      "app_id": "",
+      "app_secret": "",
+      "enabled": true
+    },
+    "slack": {
+      "allow_from": [],
+      "app_token": "",
+      "bot_token": "",
+      "enabled": false
+    },
+    "telegram": {
+      "allow_from": [],
+      "enabled": true,
+      "proxy": "",
+      "token": ""
+    },
+    "whatsapp": {
+      "allow_from": [],
+      "bridge_url": "ws://localhost:3001",
+      "enabled": false
+    }
+  },
+  "devices": {
+    "enabled": false,
+    "monitor_usb": true
+  },
+  "gateway": {
+    "host": "0.0.0.0",
+    "port": 18790
+  },
+  "heartbeat": {
+    "enabled": true,
+    "interval": 30
+  },
+  "providers": {
+    "anthropic": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "deepseek": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "gemini": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "github_copilot": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "groq": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "moonshot": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "nvidia": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "ollama": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "openai": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "openrouter": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "shengsuanyun": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "vllm": {
+      "api_base": "",
+      "api_key": ""
+    },
+    "zhipu": {
+      "api_base": "",
+      "api_key": "da4564a2b74c40908b6a6bfc64d0c9cd.6Xk9oB9MbVYlVKcv"
+    }
+  },
+  "tools": {
+    "web": {
+      "brave": {
+        "api_key": "",
+        "enabled": false,
+        "max_results": 10
+      },
+      "duckduckgo": {
+        "enabled": true,
+        "max_results": 10
+      }
+    }
+  }
+}
