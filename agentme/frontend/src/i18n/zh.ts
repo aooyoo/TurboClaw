@@ -65,7 +65,7 @@ const zh = {
     'settings.about.feature1': '独特个性和长期记忆、主动性心跳机制、定时任务',
     'settings.about.feature2': '本地文件访问、编辑、整理、系统级命令行权限',
     'settings.about.feature3': '多会话管理、多模型支持、多语言支持',
-    'settings.about.feature4': 'Telegram 随身控制、技能市场、插件系统',
+    'settings.about.feature4': '用你熟悉的聊天App随身控制、技能市场、插件系统',
     'settings.language': '语言',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',

@@ -67,7 +67,7 @@ const en: Record<TranslationKeys, string> = {
     'settings.about.feature1': 'Unique personality and long-term memory, active heartbeat mechanism, scheduled tasks',
     'settings.about.feature2': 'Local file access, editing, organization, system-level command line permissions',
     'settings.about.feature3': 'Multi-session management, multi-model support, multi-language support',
-    'settings.about.feature4': 'Telegram remote control, skills marketplace, plugin system',
+    'settings.about.feature4': 'Use your favorite chat app for remote control, skills marketplace, plugin system',
     'settings.language': 'Language',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',

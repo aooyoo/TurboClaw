@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -15,6 +16,9 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+//go:embed default_config.json
+var defaultConfigJSON []byte
 
 // App struct
 type App struct {
@@ -544,6 +548,14 @@ func (a *App) autoOnboard() {
 		fmt.Printf("Auto-onboard warning: %v\n%s\n", err, string(output))
 	} else {
 		fmt.Printf("Auto-onboard completed: %s\n", string(output))
+	}
+
+	// Replace config with our default config template
+	configPath := filepath.Join(homeDir, ".picoclaw", "config.json")
+	if err := os.WriteFile(configPath, defaultConfigJSON, 0644); err != nil {
+		fmt.Printf("Failed to write default config: %v\n", err)
+	} else {
+		fmt.Println("Default config installed to ~/.picoclaw/config.json")
 	}
 }
 

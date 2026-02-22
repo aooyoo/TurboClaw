@@ -67,7 +67,7 @@ const es: Record<TranslationKeys, string> = {
     'settings.about.feature1': 'Personalidad única y memoria a largo plazo, mecanismo de latido activo, tareas programadas',
     'settings.about.feature2': 'Acceso a archivos locales, edición, organización, permisos de línea de comandos a nivel de sistema',
     'settings.about.feature3': 'Gestión de múltiples sesiones, soporte para múltiples modelos, soporte para múltiples idiomas',
-    'settings.about.feature4': 'Control remoto por Telegram, mercado de skills, sistema de plugins',
+    'settings.about.feature4': 'Usa tu app de chat favorita para control remoto, mercado de skills, sistema de plugins',
     'settings.language': 'Idioma',
     'settings.language.zh': '中文',
     'settings.language.en': 'English',

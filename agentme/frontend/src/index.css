@@ -83,6 +83,7 @@ body {
 
 .titlebar-drag {
   -webkit-app-region: drag;
+  --wails-draggable: drag;
 }
 
 .titlebar-no-drag {
