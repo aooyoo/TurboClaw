@@ -19,9 +19,9 @@ const preprocessMessage = (content: string) => {
     // If it's a code block or inline code, return untouched
     if (part.startsWith('`')) return part;
 
-    // Replace absolute paths with markdown links
-    // Matches paths starting with /Users/, /tmp/, etc.
-    return part.replace(/(^|\s|[^a-zA-Z0-9_\/])(\/(?:Users|tmp|var|private|Volumes)\/[a-zA-Z0-9_.+/-]+)/g, '$1[$2]($2)');
+    // Replace absolute paths with markdown links, but ignore paths already inside markdown links like [name](/path)
+    // We do this by excluding characters like [, ], (, ) from preceding the path.
+    return part.replace(/(^|[^a-zA-Z0-9_\/\]\(\)\[])(\/(?:Users|tmp|var|private|Volumes|Library|System)\/[a-zA-Z0-9_.+/-]+)/g, '$1[$2]($2)');
   }).join('');
 };
 
@@ -96,16 +96,26 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   </a>
                 );
               },
-              code({ node, inline, className, children, ...props }: any) {
+              code({ node, className, children, ...props }: any) {
                 const match = /language-(\w+)/.exec(className || '');
                 const textContent = String(children).replace(/\n$/, '');
 
-                // Allow clicking on inline code if it's a path
-                if (inline && (textContent.startsWith('/Users') || textContent.startsWith('/Volumes') || textContent.startsWith('/tmp'))) {
+                // Allow clicking on code block/inline if it's a local absolute path
+                const isPath = !match && (
+                  textContent.startsWith('/Users') ||
+                  textContent.startsWith('/Volumes') ||
+                  textContent.startsWith('/tmp') ||
+                  textContent.startsWith('/var') ||
+                  textContent.startsWith('/private') ||
+                  textContent.startsWith('/Library') ||
+                  textContent.startsWith('/System')
+                );
+
+                if (isPath) {
                   return (
                     <code
                       {...props}
-                      className={cn(className, "cursor-pointer text-blue-500 hover:text-blue-400 hover:underline")}
+                      className={cn(className, "cursor-pointer text-blue-500 hover:text-blue-400 hover:underline bg-[var(--color-border)]/50 px-1 py-0.5 rounded")}
                       onClick={() => OpenLocalPath(textContent).catch(console.error)}
                       title="点击打开文件/文件夹"
                     >
@@ -114,7 +124,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
                   );
                 }
 
-                return !inline && match ? (
+                return match ? (
                   <SyntaxHighlighter
                     {...props}
                     children={String(children).replace(/\n$/, '')}
