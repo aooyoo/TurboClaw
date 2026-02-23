@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SendIcon, PaperclipIcon, PlusIcon, LoaderIcon, StopIcon } from './Icon';
 import { cn } from '../lib/utils';
-import { SelectFiles } from '../../wailsjs/go/main/App';
+import { SelectFiles, GetSkills } from '../../wailsjs/go/main/App';
 import { useI18n } from '../i18n/index';
+import { main } from '../../wailsjs/go/models';
 
 export interface ChatInputProps {
   onSend: (content: string, files: string[]) => void;
@@ -19,6 +20,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [files, setFiles] = useState<string[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const [skills, setSkills] = useState<main.Skill[]>([]);
+  const [showSkills, setShowSkills] = useState(false);
+  const [filteredSkills, setFilteredSkills] = useState<main.Skill[]>([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    GetSkills()
+      .then((res) => setSkills(res || []))
+      .catch(console.error);
+  }, []);
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -27,10 +39,58 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   }, [content]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (showSkills && filteredSkills.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSelectedIndex(prev => (prev + 1) % filteredSkills.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSelectedIndex(prev => (prev - 1 + filteredSkills.length) % filteredSkills.length);
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        insertSkill(filteredSkills[selectedIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        setShowSkills(false);
+        return;
+      }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit();
     }
+  };
+
+  const handleContentChange = (val: string) => {
+    setContent(val);
+    const match = /(?:^|\s|\n)\/([a-zA-Z0-9_-]*)$/.exec(val);
+    if (match) {
+      const query = match[1].toLowerCase();
+      const filtered = skills.filter(s =>
+        s.name.toLowerCase().includes(query) ||
+        s.description.toLowerCase().includes(query)
+      );
+      setFilteredSkills(filtered);
+      setShowSkills(true);
+      setSelectedIndex(0);
+    } else {
+      setShowSkills(false);
+    }
+  };
+
+  const insertSkill = (skill: main.Skill) => {
+    const newVal = content.replace(/(^|\s|\n)\/[a-zA-Z0-9_-]*$/, `$1/${skill.name} `);
+    setContent(newVal);
+    setShowSkills(false);
+    setTimeout(() => {
+      textareaRef.current?.focus();
+    }, 10);
   };
 
   const handleSubmit = () => {
@@ -39,6 +99,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       onSend(trimmed, [...files]);
       setContent('');
       setFiles([]);
+      setShowSkills(false);
     }
   };
 
@@ -58,7 +119,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+    <div className="border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 relative">
+      {/* Skills Dropdown */}
+      {showSkills && filteredSkills.length > 0 && (
+        <div className="absolute bottom-full left-4 mb-2 w-72 max-h-60 overflow-y-auto bg-[var(--color-surface)] border border-[var(--color-border)] shadow-lg rounded-xl z-50 py-1 flex flex-col">
+          {filteredSkills.map((skill, idx) => (
+            <button
+              key={idx}
+              onClick={() => insertSkill(skill)}
+              className={cn(
+                "w-full text-left px-3 py-2 flex items-center gap-3 transition-colors outline-none",
+                selectedIndex === idx
+                  ? "bg-[var(--color-border)] text-[var(--color-fg)]"
+                  : "text-[var(--color-dim)] hover:bg-[var(--color-border)]/50 hover:text-[var(--color-fg)]"
+              )}
+            >
+              <span className="text-xl flex-shrink-0">{skill.emoji || '🔧'}</span>
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-sm text-[var(--color-fg)] truncate">/{skill.name}</div>
+                <div className="text-xs text-[var(--color-muted)] truncate">{skill.description}</div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
       {files.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-3">
           {files.map((file, idx) => (
@@ -99,7 +184,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         <textarea
           ref={textareaRef}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => handleContentChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={t('chat.inputPlaceholder')}
           disabled={disabled}
@@ -152,23 +237,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         >
           {disabled ? <StopIcon size={14} /> : <SendIcon size={18} />}
         </button>
-      </div>
-
-      <div className="flex items-center justify-between mt-2">
-        <div className="flex items-center gap-2">
-          <button
-            className={cn(
-              'flex items-center gap-1 text-small text-[var(--color-dim)]',
-              'hover:text-[var(--color-fg)] transition-colors',
-              'disabled:opacity-40 disabled:cursor-not-allowed'
-            )}
-            disabled={disabled}
-            title="更多选项"
-          >
-            <PlusIcon size={14} />
-            <span>{t('chat.more')}</span>
-          </button>
-        </div>
       </div>
     </div>
   );
