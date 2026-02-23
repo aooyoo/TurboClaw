@@ -8,6 +8,7 @@ TurboClaw/frontend/dist/
 # picoclaw binary and source
 picoclaw
 picoclaw_src/
+workspace/
 
 # OS files
 .DS_Store

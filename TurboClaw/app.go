@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
-	_ "embed"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -19,6 +20,9 @@ import (
 
 //go:embed default_config.json
 var defaultConfigJSON []byte
+
+//go:embed all:default_workspace
+var defaultWorkspaceFS embed.FS
 
 // App struct
 type App struct {
@@ -613,6 +617,60 @@ func (a *App) autoOnboard() {
 		fmt.Printf("Failed to write default config: %v\n", err)
 	} else {
 		fmt.Println("Default config installed to ~/.picoclaw/config.json")
+	}
+
+	// Copy embedded default workspace to ~/.picoclaw/workspace
+	a.copyEmbeddedWorkspace(workspaceDir)
+}
+
+// copyEmbeddedWorkspace copies the embedded default_workspace to the target directory,
+// overwriting any existing files but preserving files not in the template.
+func (a *App) copyEmbeddedWorkspace(targetDir string) {
+	err := fs.WalkDir(defaultWorkspaceFS, "default_workspace", func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Compute the relative path (strip the "default_workspace" prefix)
+		relPath, err := filepath.Rel("default_workspace", path)
+		if err != nil {
+			return err
+		}
+
+		// Skip the root directory itself
+		if relPath == "." {
+			return nil
+		}
+
+		destPath := filepath.Join(targetDir, relPath)
+
+		if d.IsDir() {
+			return os.MkdirAll(destPath, 0755)
+		}
+
+		// Read the embedded file
+		data, err := defaultWorkspaceFS.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read embedded file %s: %w", path, err)
+		}
+
+		// Ensure parent directory exists
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return err
+		}
+
+		// Write the file (overwrite if exists)
+		if err := os.WriteFile(destPath, data, 0644); err != nil {
+			return fmt.Errorf("failed to write file %s: %w", destPath, err)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		fmt.Printf("Failed to copy default workspace: %v\n", err)
+	} else {
+		fmt.Printf("Default workspace installed to %s\n", targetDir)
 	}
 }
 
