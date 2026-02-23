@@ -8,6 +8,22 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Message } from '../types';
 import { useI18n } from '../i18n/index';
+import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
+import { OpenLocalPath } from '../../wailsjs/go/main/App';
+
+const preprocessMessage = (content: string) => {
+  if (!content) return '';
+  // Split by code blocks (```...```) and inline code (`...`) to avoid modifying code content
+  const parts = content.split(/(```[\s\S]*?```|`[^`]+`)/g);
+  return parts.map(part => {
+    // If it's a code block or inline code, return untouched
+    if (part.startsWith('`')) return part;
+
+    // Replace absolute paths with markdown links
+    // Matches paths starting with /Users/, /tmp/, etc.
+    return part.replace(/(^|\s|[^a-zA-Z0-9_\/])(\/(?:Users|tmp|var|private|Volumes)\/[a-zA-Z0-9_.+/-]+)/g, '$1[$2]($2)');
+  }).join('');
+};
 
 export interface ChatMessageProps {
   message: Message;
@@ -59,8 +75,45 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkBreaks]}
             components={{
+              a({ href, children, ...props }: any) {
+                return (
+                  <a
+                    {...props}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (!href) return;
+                      // Determine if it's a local file path
+                      if (href.startsWith('/Users') || href.startsWith('/tmp') || href.startsWith('/Volumes') || href.startsWith('/var')) {
+                        OpenLocalPath(href).catch((err: any) => console.error("Failed to open local path", err));
+                      } else {
+                        BrowserOpenURL(href);
+                      }
+                    }}
+                    className="text-blue-500 hover:text-blue-400 underline decoration-blue-500/30 hover:decoration-blue-400"
+                  >
+                    {children}
+                  </a>
+                );
+              },
               code({ node, inline, className, children, ...props }: any) {
                 const match = /language-(\w+)/.exec(className || '');
+                const textContent = String(children).replace(/\n$/, '');
+
+                // Allow clicking on inline code if it's a path
+                if (inline && (textContent.startsWith('/Users') || textContent.startsWith('/Volumes') || textContent.startsWith('/tmp'))) {
+                  return (
+                    <code
+                      {...props}
+                      className={cn(className, "cursor-pointer text-blue-500 hover:text-blue-400 hover:underline")}
+                      onClick={() => OpenLocalPath(textContent).catch(console.error)}
+                      title="点击打开文件/文件夹"
+                    >
+                      {children}
+                    </code>
+                  );
+                }
+
                 return !inline && match ? (
                   <SyntaxHighlighter
                     {...props}
@@ -77,7 +130,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               }
             }}
           >
-            {message.content}
+            {preprocessMessage(message.content)}
           </ReactMarkdown>
         </div>
 

@@ -82,6 +82,10 @@ export function Onboard(arg1) {
   return window['go']['main']['App']['Onboard'](arg1);
 }
 
+export function OpenLocalPath(arg1) {
+  return window['go']['main']['App']['OpenLocalPath'](arg1);
+}
+
 export function OpenPermissionSettings(arg1) {
   return window['go']['main']['App']['OpenPermissionSettings'](arg1);
 }

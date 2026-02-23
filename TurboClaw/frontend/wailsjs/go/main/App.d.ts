@@ -42,6 +42,8 @@ export function MinimizeWindow():Promise<void>;
 
 export function Onboard(arg1:string):Promise<string>;
 
+export function OpenLocalPath(arg1:string):Promise<void>;
+
 export function OpenPermissionSettings(arg1:string):Promise<void>;
 
 export function OpenURL(arg1:string):Promise<void>;

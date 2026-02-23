@@ -740,6 +740,20 @@ func (a *App) OpenPermissionSettings(permID string) {
 	}
 }
 
+// OpenLocalPath opens a local file or directory using the macOS 'open' command
+func (a *App) OpenLocalPath(path string) error {
+	// Clean the path
+	cleanPath := filepath.Clean(path)
+	
+	// Ensure it exists
+	if _, err := os.Stat(cleanPath); os.IsNotExist(err) {
+		return fmt.Errorf("path does not exist: %s", cleanPath)
+	}
+
+	cmd := exec.Command("open", cleanPath)
+	return cmd.Start()
+}
+
 // GetConfig returns the current configuration
 func (a *App) GetConfig() *Config {
 	return a.config
