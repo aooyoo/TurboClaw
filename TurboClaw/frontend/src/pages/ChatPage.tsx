@@ -38,7 +38,13 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   }, []);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      try {
+        messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      } catch (err) {
+        messagesEndRef.current.scrollIntoView(false);
+      }
+    }
   };
 
   useEffect(() => {
