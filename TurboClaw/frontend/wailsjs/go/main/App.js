@@ -121,3 +121,7 @@ export function SendMessage(arg1, arg2) {
 export function SetCurrentSession(arg1) {
   return window['go']['main']['App']['SetCurrentSession'](arg1);
 }
+
+export function StopAIResponse() {
+  return window['go']['main']['App']['StopAIResponse']();
+}

@@ -77,6 +77,7 @@ const en: Record<TranslationKeys, string> = {
     'error.picoNotInstalled': 'PicoClaw is not installed.',
     'error.noResponse': 'No response received. Please check your configuration.',
     'error.picoFailed': 'PicoClaw execution failed',
+    'error.stop': 'Generation stopped.',
 
     // Authorization
     'auth.title': 'Path Authorization',

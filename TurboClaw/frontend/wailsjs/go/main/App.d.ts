@@ -61,3 +61,5 @@ export function SelectFiles():Promise<Array<string>>;
 export function SendMessage(arg1:string,arg2:Array<string>):Promise<main.ChatSession>;
 
 export function SetCurrentSession(arg1:string):Promise<void>;
+
+export function StopAIResponse():Promise<void>;

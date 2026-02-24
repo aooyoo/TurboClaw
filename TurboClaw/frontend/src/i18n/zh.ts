@@ -75,6 +75,7 @@ const zh = {
     'error.picoNotInstalled': 'PicoClaw 未安装。',
     'error.noResponse': '未收到响应，请检查配置。',
     'error.picoFailed': 'PicoClaw 执行失败',
+    'error.stop': '生成已停止。',
 
     // Authorization
     'auth.title': '路径授权',

@@ -7,12 +7,14 @@ import { main } from '../../wailsjs/go/models';
 
 export interface ChatInputProps {
   onSend: (content: string, files: string[]) => void;
+  onStop?: () => void;
   disabled?: boolean;
   placeholder?: string;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSend,
+  onStop,
   disabled = false,
 }) => {
   const { t } = useI18n();
@@ -222,16 +224,15 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         )}
 
         <button
-          onClick={handleSubmit}
-          disabled={disabled || (!content.trim() && files.length === 0)}
+          onClick={disabled ? onStop : handleSubmit}
+          disabled={!disabled && !content.trim() && files.length === 0}
           className={cn(
             'flex-shrink-0 flex items-center justify-center',
             'w-10 h-10 rounded-lg transition-colors',
-            'disabled:opacity-80 disabled:cursor-not-allowed',
             (!content.trim() && files.length === 0 && !disabled)
-              ? 'bg-[var(--color-border)] text-[var(--color-muted)]'
+              ? 'bg-[var(--color-border)] text-[var(--color-muted)] cursor-not-allowed'
               : 'bg-[var(--color-accent)] text-white hover:opacity-90',
-            disabled && 'bg-red-500 hover:bg-red-600 text-white' // Stop button styling
+            disabled && 'bg-red-500 hover:bg-red-600 text-white shadow-md' // Stop button styling
           )}
           title={disabled ? "停止" : "发送"}
         >

@@ -30,6 +30,8 @@ type App struct {
 	picoclaw    *PicoclawManager
 	chatManager *ChatManager
 	config      *Config
+	aiCancel    context.CancelFunc
+	aiCancelMu  sync.Mutex
 }
 
 // PicoclawManager manages the picoclaw binary execution
@@ -1106,15 +1108,30 @@ func (a *App) GetAIResponse(content string, files []string) (*ChatSession, error
 	// Check if picoclaw is available
 	binaryPath, _ := a.picoclaw.FindBinary()
 	if binaryPath == "" {
-		response = "PicoClaw 未安装。"
+		response = "__i18n:error.picoNotInstalled__"
 	} else {
-		cmd := exec.Command(binaryPath, "agent", "-m", fullMessage)
+		a.aiCancelMu.Lock()
+		ctx, cancel := context.WithCancel(context.Background())
+		a.aiCancel = cancel
+		a.aiCancelMu.Unlock()
+
+		defer func() {
+			a.aiCancelMu.Lock()
+			a.aiCancel = nil
+			a.aiCancelMu.Unlock()
+			cancel()
+		}()
+
+		cmd := exec.CommandContext(ctx, binaryPath, "agent", "-m", fullMessage)
 		cmd.Dir = a.picoclaw.GetConfigDir()
 		outputBytes, err := cmd.CombinedOutput()
-		if err != nil {
-			response = fmt.Sprintf("PicoClaw 执行失败: %v\n\n%s", err, string(outputBytes))
+		
+		if ctx.Err() == context.Canceled {
+			response = "__i18n:error.stop__"
+		} else if err != nil {
+			response = fmt.Sprintf("__i18n:error.picoFailed__: %v\n\n%s", err, string(outputBytes))
 		} else if len(outputBytes) == 0 {
-			response = "未收到响应，请检查配置。"
+			response = "__i18n:error.noResponse__"
 		} else {
 			// Filter out log lines and extract clean response
 			response = extractCleanResponse(string(outputBytes))
@@ -1124,6 +1141,15 @@ func (a *App) GetAIResponse(content string, files []string) (*ChatSession, error
 	a.chatManager.AddMessage("assistant", response, nil)
 
 	return a.chatManager.GetCurrentSession()
+}
+
+// StopAIResponse cancels the currently running AI generation
+func (a *App) StopAIResponse() {
+	a.aiCancelMu.Lock()
+	defer a.aiCancelMu.Unlock()
+	if a.aiCancel != nil {
+		a.aiCancel()
+	}
 }
 
 // GetPicoclawStatus returns the status of picoclaw

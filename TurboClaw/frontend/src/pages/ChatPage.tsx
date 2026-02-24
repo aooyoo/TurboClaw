@@ -12,6 +12,7 @@ export interface ChatPageProps {
   onCreateSession: () => void;
   onSessionSelect: (id: string) => void;
   onSendMessage: (content: string, files: string[]) => void;
+  onStop?: () => void;
   onDeleteSession: (id: string) => void;
   onRenameSession: (id: string, name: string) => void;
   loading?: boolean;
@@ -23,6 +24,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   onCreateSession,
   onSessionSelect,
   onSendMessage,
+  onStop,
   onDeleteSession,
   onRenameSession,
   loading = false,
@@ -139,6 +141,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 
       <ChatInput
         onSend={onSendMessage}
+        onStop={onStop}
         disabled={loading}
       />
     </div>

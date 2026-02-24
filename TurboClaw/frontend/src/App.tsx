@@ -17,7 +17,8 @@ import {
   DeleteSession,
   SendMessage,
   GetAIResponse,
-  SaveConfig
+  SaveConfig,
+  StopAIResponse
 } from '../wailsjs/go/main/App';
 
 export default function App() {
@@ -177,6 +178,14 @@ export default function App() {
     }
   };
 
+  const handleStopAIResponse = async () => {
+    try {
+      await StopAIResponse();
+    } catch (err) {
+      console.error('Failed to stop AI response:', err);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-[var(--color-bg)] overflow-hidden">
       {/* Draggable Titlebar Area */}
@@ -206,6 +215,7 @@ export default function App() {
               onCreateSession={handleCreateSession}
               onSessionSelect={handleSessionSelect}
               onSendMessage={handleSendMessage}
+              onStop={handleStopAIResponse}
               onDeleteSession={handleDeleteSession}
               onRenameSession={() => { }}
               loading={loading}

@@ -140,7 +140,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
               }
             }}
           >
-            {preprocessMessage(message.content)}
+            {preprocessMessage(message.content).replace(/__i18n:([a-zA-Z0-9_\.]+)__/g, (match, key) => t(key as any) || match)}
           </ReactMarkdown>
         </div>
 

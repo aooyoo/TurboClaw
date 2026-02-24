@@ -77,6 +77,7 @@ const es: Record<TranslationKeys, string> = {
     'error.picoNotInstalled': 'PicoClaw no está instalado.',
     'error.noResponse': 'No se recibió respuesta. Revisa la configuración.',
     'error.picoFailed': 'Error en la ejecución de PicoClaw',
+    'error.stop': 'Generación detenida.',
 
     // Authorization
     'auth.title': 'Autorización de Ruta',
