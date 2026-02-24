@@ -35,7 +35,7 @@
       "channel_access_token": "",
       "channel_secret": "",
       "enabled": false,
-      "webhook_host": "0.0.0.0",
+      "webhook_host": "127.0.0.1",
       "webhook_path": "/webhook/line",
       "webhook_port": 18791
     },
@@ -82,7 +82,7 @@
     "monitor_usb": true
   },
   "gateway": {
-    "host": "0.0.0.0",
+    "host": "127.0.0.1",
     "port": 18790
   },
   "heartbeat": {
