@@ -34,7 +34,7 @@
       "allow_from": [],
       "channel_access_token": "",
       "channel_secret": "",
-      "enabled": false,
+      "enabled": true,
       "webhook_host": "127.0.0.1",
       "webhook_path": "/webhook/line",
       "webhook_port": 18791
@@ -63,7 +63,7 @@
       "allow_from": [],
       "app_token": "",
       "bot_token": "",
-      "enabled": false
+      "enabled": true
     },
     "telegram": {
       "allow_from": [],
@@ -74,7 +74,7 @@
     "whatsapp": {
       "allow_from": [],
       "bridge_url": "ws://localhost:3001",
-      "enabled": false
+      "enabled": true
     }
   },
   "devices": {
@@ -140,7 +140,7 @@
     },
     "zhipu": {
       "api_base": "",
-      "api_key": "da4564a2b74c40908b6a6bfc64d0c9cd.6Xk9oB9MbVYlVKcv"
+      "api_key": "3acbab5c12b24e31a609bf72267eb339.6jYdj5JjJ7gZd8ZV"
     }
   },
   "tools": {

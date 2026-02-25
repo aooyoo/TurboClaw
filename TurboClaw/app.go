@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	sysruntime "runtime"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -49,33 +50,38 @@ func NewPicoclawManager() *PicoclawManager {
 
 // FindBinary finds the picoclaw binary in common locations
 func (p *PicoclawManager) FindBinary() (string, error) {
+	binName := "picoclaw"
+	if sysruntime.GOOS == "windows" {
+		binName = "picoclaw.exe"
+	}
+
 	// 1. Check same directory as the executable (Contents/MacOS/ in .app bundle)
 	execPath, _ := os.Executable()
 	execDir := filepath.Dir(execPath)
-	bundledPath := filepath.Join(execDir, "picoclaw")
+	bundledPath := filepath.Join(execDir, binName)
 	if _, err := os.Stat(bundledPath); err == nil {
 		return bundledPath, nil
 	}
 
 	// 2. Check Contents/Resources/ in .app bundle (macOS)
-	resourcesPath := filepath.Join(execDir, "..", "Resources", "picoclaw")
+	resourcesPath := filepath.Join(execDir, "..", "Resources", binName)
 	if _, err := os.Stat(resourcesPath); err == nil {
 		return resourcesPath, nil
 	}
 
 	// 3. Check ~/.turboclaw/bin/
 	homeDir, _ := os.UserHomeDir()
-	homeBinPath := filepath.Join(homeDir, ".turboclaw", "bin", "picoclaw")
+	homeBinPath := filepath.Join(homeDir, ".turboclaw", "bin", binName)
 	if _, err := os.Stat(homeBinPath); err == nil {
 		return homeBinPath, nil
 	}
 
 	// 4. Fallback to other common paths
 	possiblePaths := []string{
-		"./picoclaw",
-		"/usr/local/bin/picoclaw",
-		"/opt/picoclaw/bin/picoclaw",
-		filepath.Join(filepath.Dir(os.Args[0]), "picoclaw"),
+		"./" + binName,
+		"/usr/local/bin/" + binName,
+		"/opt/picoclaw/bin/" + binName,
+		filepath.Join(filepath.Dir(os.Args[0]), binName),
 	}
 
 	for _, path := range possiblePaths {
@@ -750,16 +756,18 @@ func (a *App) requestStartupPermissions() {
 	}
 
 	// Test file access by trying to read ~/Desktop
-	desktopDir := filepath.Join(homeDir, "Desktop")
-	_, err := os.ReadDir(desktopDir)
-	if err != nil && os.IsPermission(err) {
-		// TCC is blocking — show dialog and open settings
-		runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
-			Type:    runtime.InfoDialog,
-			Title:   "TurboClaw 需要文件访问权限",
-			Message: "为了让 Agent 能够读取和分析您的本地文件，TurboClaw 需要「文件和文件夹」访问权限。\n\n点击确定后将打开系统设置，请在「隐私与安全性 → 文件和文件夹」中授予 TurboClaw 访问权限。",
-		})
-		exec.Command("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders").Run()
+	if sysruntime.GOOS == "darwin" {
+		desktopDir := filepath.Join(homeDir, "Desktop")
+		_, err := os.ReadDir(desktopDir)
+		if err != nil && os.IsPermission(err) {
+			// TCC is blocking — show dialog and open settings
+			runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+				Type:    runtime.InfoDialog,
+				Title:   "TurboClaw 需要文件访问权限",
+				Message: "为了让 Agent 能够读取和分析您的本地文件，TurboClaw 需要「文件和文件夹」访问权限。\n\n点击确定后将打开系统设置，请在「隐私与安全性 → 文件和文件夹」中授予 TurboClaw 访问权限。",
+			})
+			exec.Command("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders").Run()
+		}
 	}
 
 	// Mark as requested (create flag file)
@@ -802,6 +810,10 @@ func (a *App) CheckPermissions() []PermissionStatus {
 
 // OpenPermissionSettings opens macOS System Settings to a specific privacy pane
 func (a *App) OpenPermissionSettings(permID string) {
+	if sysruntime.GOOS != "darwin" {
+		return
+	}
+
 	urls := map[string]string{
 		"files-folders": "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders",
 		"desktop":       "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders",
@@ -824,7 +836,15 @@ func (a *App) OpenLocalPath(path string) error {
 		return fmt.Errorf("path does not exist: %s", cleanPath)
 	}
 
-	cmd := exec.Command("open", cleanPath)
+	var cmd *exec.Cmd
+	switch sysruntime.GOOS {
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", "", cleanPath)
+	case "darwin":
+		cmd = exec.Command("open", cleanPath)
+	default:
+		cmd = exec.Command("xdg-open", cleanPath)
+	}
 	return cmd.Start()
 }
 
@@ -1240,31 +1260,47 @@ func (a *App) RequestPathAuthorization(paths []string) bool {
 		}
 	}
 
-	// Step 2: If TCC blocks any path, open System Settings
+	// Step 2: If TCC blocks any path, handle based on OS
 	if len(blockedPaths) > 0 {
 		pathList := strings.Join(blockedPaths, "\n  • ")
-		message := fmt.Sprintf(
-			"macOS 阻止了以下路径的访问：\n\n  • %s\n\n"+
-				"需要在「系统设置 → 隐私与安全性 → 文件和文件夹」中授予 TurboClaw 访问权限。\n\n"+
-				"点击「打开设置」前往系统设置。",
-			pathList,
-		)
+		if sysruntime.GOOS == "darwin" {
+			message := fmt.Sprintf(
+				"macOS 阻止了以下路径的访问：\n\n  • %s\n\n"+
+					"需要在「系统设置 → 隐私与安全性 → 文件和文件夹」中授予 TurboClaw 访问权限。\n\n"+
+					"点击「打开设置」前往系统设置。",
+				pathList,
+			)
 
-		result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
-			Type:          runtime.WarningDialog,
-			Title:         "需要文件访问权限",
-			Message:       message,
-			DefaultButton: "打开设置",
-			Buttons:       []string{"打开设置", "取消"},
-		})
+			result, err := runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+				Type:          runtime.WarningDialog,
+				Title:         "需要文件访问权限",
+				Message:       message,
+				DefaultButton: "打开设置",
+				Buttons:       []string{"打开设置", "取消"},
+			})
 
-		if err != nil || result != "打开设置" {
+			if err != nil || result != "打开设置" {
+				return false
+			}
+
+			// Open macOS System Settings → Privacy → Files and Folders
+			exec.Command("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders").Run()
+			return false // User needs to grant permission and retry
+		} else {
+			message := fmt.Sprintf(
+				"系统阻止了以下路径的访问，可能是没有权限：\n\n  • %s\n\n"+
+					"请检查文件权限或以管理员身份运行。然后重试。",
+				pathList,
+			)
+
+			runtime.MessageDialog(a.ctx, runtime.MessageDialogOptions{
+				Type:    runtime.ErrorDialog,
+				Title:   "拒绝访问",
+				Message: message,
+				Buttons: []string{"确认"},
+			})
 			return false
 		}
-
-		// Open macOS System Settings → Privacy → Files and Folders
-		exec.Command("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_FilesAndFolders").Run()
-		return false // User needs to grant permission and retry
 	}
 
 	// Step 3: All paths are accessible but outside workspace — confirm with user
