@@ -25,6 +25,9 @@ var defaultConfigJSON []byte
 //go:embed all:default_workspace
 var defaultWorkspaceFS embed.FS
 
+//go:embed embedded_bin/*
+var embeddedBinFS embed.FS
+
 // App struct
 type App struct {
 	ctx         context.Context
@@ -48,6 +51,38 @@ func NewPicoclawManager() *PicoclawManager {
 	return &PicoclawManager{}
 }
 
+// ExtractEmbedded extracts the embedded picoclaw to a local bin directory.
+func (p *PicoclawManager) ExtractEmbedded() error {
+	binName := "picoclaw"
+	if sysruntime.GOOS == "windows" {
+		binName = "picoclaw.exe"
+	}
+
+	data, err := embeddedBinFS.ReadFile("embedded_bin/" + binName)
+	if err != nil {
+		return err // file not embedded or missing
+	}
+
+	homeDir, _ := os.UserHomeDir()
+	homeBinDir := filepath.Join(homeDir, ".turboclaw", "bin")
+	if err := os.MkdirAll(homeBinDir, 0755); err != nil {
+		return err
+	}
+
+	destPath := filepath.Join(homeBinDir, binName)
+
+	// Check if the current extracted binary is the exact same size
+	if stat, err := os.Stat(destPath); err == nil && stat.Size() == int64(len(data)) {
+		return nil // already extracted and matched
+	}
+
+	// Write new binary
+	if err := os.WriteFile(destPath, data, 0755); err != nil {
+		return err
+	}
+	return nil
+}
+
 // FindBinary finds the picoclaw binary in common locations
 func (p *PicoclawManager) FindBinary() (string, error) {
 	binName := "picoclaw"
@@ -55,7 +90,14 @@ func (p *PicoclawManager) FindBinary() (string, error) {
 		binName = "picoclaw.exe"
 	}
 
-	// 1. Check same directory as the executable (Contents/MacOS/ in .app bundle)
+	// 1. Check ~/.turboclaw/bin/ (extracted embedded directory)
+	homeDir, _ := os.UserHomeDir()
+	homeBinPath := filepath.Join(homeDir, ".turboclaw", "bin", binName)
+	if _, err := os.Stat(homeBinPath); err == nil {
+		return homeBinPath, nil
+	}
+
+	// 2. Check same directory as the executable (Contents/MacOS/ in .app bundle or local dev)
 	execPath, _ := os.Executable()
 	execDir := filepath.Dir(execPath)
 	bundledPath := filepath.Join(execDir, binName)
@@ -63,17 +105,10 @@ func (p *PicoclawManager) FindBinary() (string, error) {
 		return bundledPath, nil
 	}
 
-	// 2. Check Contents/Resources/ in .app bundle (macOS)
+	// 3. Check Contents/Resources/ in .app bundle (macOS)
 	resourcesPath := filepath.Join(execDir, "..", "Resources", binName)
 	if _, err := os.Stat(resourcesPath); err == nil {
 		return resourcesPath, nil
-	}
-
-	// 3. Check ~/.turboclaw/bin/
-	homeDir, _ := os.UserHomeDir()
-	homeBinPath := filepath.Join(homeDir, ".turboclaw", "bin", binName)
-	if _, err := os.Stat(homeBinPath); err == nil {
-		return homeBinPath, nil
 	}
 
 	// 4. Fallback to other common paths
@@ -571,7 +606,10 @@ func (a *App) startup(ctx context.Context) {
 	a.picoclaw = NewPicoclawManager()
 	a.chatManager = NewChatManager()
 
-	// Auto-onboard: run picoclaw onboard if workspace doesn't exist yet
+	// Extract embedded binary if bundled
+	a.picoclaw.ExtractEmbedded()
+
+	// Auto-onboard...
 	a.autoOnboard()
 
 	// Ensure picoclaw can access files outside workspace

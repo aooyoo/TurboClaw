@@ -20,16 +20,16 @@ build_for_arch() {
         exit 1
     fi
 
+    echo "🔨 Preparing embedded binary for macOS $ARCH..."
+    rm -f "$PROJECT_DIR/embedded_bin/"*
+    touch "$PROJECT_DIR/embedded_bin/.keep"
+    cp "$PICOCLAW_BIN" "$PROJECT_DIR/embedded_bin/picoclaw"
+
     echo "🔨 Building TurboClaw ($ARCH)..."
     wails build -platform "darwin/$ARCH"
 
     APP_BUNDLE="$PROJECT_DIR/build/bin/TurboClaw.app"
     MACOS_DIR="$APP_BUNDLE/Contents/MacOS"
-
-    # Copy picoclaw into app bundle
-    echo "📦 Bundling picoclaw binary ($ARCH)..."
-    cp "$PICOCLAW_BIN" "$MACOS_DIR/picoclaw"
-    chmod +x "$MACOS_DIR/picoclaw"
 
     # Ad-hoc sign the entire app bundle (for distribution without Apple Developer ID)
     echo "🔏 Signing app bundle (ad-hoc)..."
@@ -64,6 +64,11 @@ build_windows() {
         exit 1
     fi
 
+    echo "🔨 Preparing embedded binary for Windows $ARCH..."
+    rm -f "$PROJECT_DIR/embedded_bin/"*
+    touch "$PROJECT_DIR/embedded_bin/.keep"
+    cp "$PICOCLAW_BIN" "$PROJECT_DIR/embedded_bin/picoclaw.exe"
+
     echo "🔨 Building TurboClaw (Windows $ARCH)..."
     wails build -platform "windows/$ARCH"
 
@@ -79,10 +84,9 @@ build_windows() {
     rm -rf "$STAGE_DIR"
     mkdir -p "$STAGE_DIR"
 
-    # Copy binary and engine
-    echo "📦 Bundling picoclaw binary (Windows $ARCH)..."
+    # Copy binary (engine is already embedded)
+    echo "📦 Preparing release bundle (Windows $ARCH)..."
     cp "$APP_EXE" "$STAGE_DIR/TurboClaw.exe"
-    cp "$PICOCLAW_BIN" "$STAGE_DIR/picoclaw.exe"
 
     echo "✅ Build complete for Windows $ARCH!"
     
@@ -114,5 +118,9 @@ rm -rf "$PROJECT_DIR/build/bin/TurboClaw-Windows-"*
 build_for_arch "arm64" "$PICOCLAW_ARM64"
 build_for_arch "amd64" "$PICOCLAW_AMD64"
 build_windows "amd64" "$PICOCLAW_WIN_AMD64"
+
+# Clean embedded binaries before exiting
+rm -f "$PROJECT_DIR/embedded_bin/"*
+touch "$PROJECT_DIR/embedded_bin/.keep"
 
 echo "🎉 All builds finished successfully! You can find the packages in build/bin/"
