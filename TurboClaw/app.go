@@ -583,6 +583,20 @@ func (a *App) startup(ctx context.Context) {
 
 	// Load existing sessions
 	a.chatManager.LoadSessions()
+
+	// Start picoclaw gateway
+	if err := a.picoclaw.StartGateway(); err != nil {
+		fmt.Printf("Failed to start picoclaw gateway: %v\n", err)
+	}
+}
+
+// shutdown is called at application termination
+func (a *App) shutdown(ctx context.Context) {
+	if a.picoclaw != nil {
+		if err := a.picoclaw.StopGateway(); err != nil {
+			fmt.Printf("Failed to stop picoclaw gateway: %v\n", err)
+		}
+	}
 }
 
 // autoOnboard runs 'picoclaw onboard' for first-time users
