@@ -64,7 +64,7 @@ func (p *PicoclawManager) ExtractEmbedded() error {
 	}
 
 	homeDir, _ := os.UserHomeDir()
-	homeBinDir := filepath.Join(homeDir, ".turboclaw", "bin")
+	homeBinDir := filepath.Join(homeDir, ".picoclaw", "bin")
 	if err := os.MkdirAll(homeBinDir, 0755); err != nil {
 		return err
 	}
@@ -90,9 +90,9 @@ func (p *PicoclawManager) FindBinary() (string, error) {
 		binName = "picoclaw.exe"
 	}
 
-	// 1. Check ~/.turboclaw/bin/ (extracted embedded directory)
+	// 1. Check ~/.picoclaw/bin/ (extracted embedded directory)
 	homeDir, _ := os.UserHomeDir()
-	homeBinPath := filepath.Join(homeDir, ".turboclaw", "bin", binName)
+	homeBinPath := filepath.Join(homeDir, ".picoclaw", "bin", binName)
 	if _, err := os.Stat(homeBinPath); err == nil {
 		return homeBinPath, nil
 	}
@@ -239,7 +239,7 @@ type Message struct {
 // NewChatManager creates a new ChatManager
 func NewChatManager() *ChatManager {
 	homeDir, _ := os.UserHomeDir()
-	sessionsDir := filepath.Join(homeDir, ".turboclaw", "sessions")
+	sessionsDir := filepath.Join(homeDir, ".picoclaw", "workspace", "sessions")
 	os.MkdirAll(sessionsDir, 0755)
 
 	return &ChatManager{
@@ -786,7 +786,7 @@ type PermissionStatus struct {
 // requestStartupPermissions checks permissions and prompts the user on first launch
 func (a *App) requestStartupPermissions() {
 	homeDir, _ := os.UserHomeDir()
-	flagFile := filepath.Join(homeDir, ".turboclaw", "permissions_requested")
+	flagFile := filepath.Join(homeDir, ".picoclaw", "permissions_requested")
 
 	// Only run on first launch
 	if _, err := os.Stat(flagFile); err == nil {
