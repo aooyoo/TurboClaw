@@ -654,24 +654,26 @@ func (a *App) autoOnboard() {
 		return
 	}
 
-	// Find picoclaw binary
+	// Ensure the .picoclaw directory exists
+	os.MkdirAll(filepath.Join(homeDir, ".picoclaw"), 0755)
+
+	// Try to find picoclaw binary and run onboard (best-effort, ok to fail)
 	binaryPath, err := a.picoclaw.FindBinary()
-	if err != nil || binaryPath == "" {
-		return
-	}
-
-	// Run onboard (non-interactive, auto-creates config + workspace)
-	cmd := exec.Command(binaryPath, "onboard")
-	cmd.Dir = homeDir
-	cmd.Stdin = strings.NewReader("y\n") // Auto-confirm if config exists
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("Auto-onboard warning: %v\n%s\n", err, string(output))
+	if err == nil && binaryPath != "" {
+		cmd := exec.Command(binaryPath, "onboard")
+		cmd.Dir = homeDir
+		cmd.Stdin = strings.NewReader("y\n") // Auto-confirm if config exists
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			fmt.Printf("Auto-onboard warning: %v\n%s\n", err, string(output))
+		} else {
+			fmt.Printf("Auto-onboard completed: %s\n", string(output))
+		}
 	} else {
-		fmt.Printf("Auto-onboard completed: %s\n", string(output))
+		fmt.Printf("picoclaw binary not found, skipping onboard command (will still install defaults)\n")
 	}
 
-	// Replace config with our default config template
+	// Always install default config (overwrite whatever picoclaw onboard may have created)
 	configPath := filepath.Join(homeDir, ".picoclaw", "config.json")
 	if err := os.WriteFile(configPath, defaultConfigJSON, 0644); err != nil {
 		fmt.Printf("Failed to write default config: %v\n", err)
@@ -679,7 +681,7 @@ func (a *App) autoOnboard() {
 		fmt.Println("Default config installed to ~/.picoclaw/config.json")
 	}
 
-	// Copy embedded default workspace to ~/.picoclaw/workspace
+	// Always copy embedded default workspace
 	a.copyEmbeddedWorkspace(workspaceDir)
 }
 
