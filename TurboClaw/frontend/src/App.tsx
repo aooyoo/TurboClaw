@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { ChatPage } from './pages/ChatPage';
 import { SkillsPage } from './pages/SkillsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { WindowControls } from './components/WindowControls';
 import { ChatSession, Config, PicoclawStatus } from './types';
 import {
   GetSessions,
@@ -189,7 +190,9 @@ export default function App() {
   return (
     <div className="flex h-screen bg-[var(--color-bg)] overflow-hidden">
       {/* Draggable Titlebar Area */}
-      <div className="titlebar-drag absolute top-0 left-0 right-0 h-[env(titlebar-area-height,26px)] z-50" />
+      <div className="titlebar-drag absolute top-0 left-0 right-0 h-[env(titlebar-area-height,26px)] z-50">
+        <WindowControls />
+      </div>
 
       {/* Sidebar */}
       <Sidebar

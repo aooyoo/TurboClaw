@@ -644,13 +644,14 @@ func (a *App) shutdown(ctx context.Context) {
 }
 
 // autoOnboard runs 'picoclaw onboard' for first-time users
-// Skip if ~/.picoclaw/workspace already exists
+// Skip if ~/.picoclaw/config.json already exists
 func (a *App) autoOnboard() {
 	homeDir, _ := os.UserHomeDir()
 	workspaceDir := filepath.Join(homeDir, ".picoclaw", "workspace")
+	configPath := filepath.Join(homeDir, ".picoclaw", "config.json")
 
-	// If workspace exists, user has already onboarded
-	if _, err := os.Stat(workspaceDir); err == nil {
+	// If config exists, user has already onboarded
+	if _, err := os.Stat(configPath); err == nil {
 		return
 	}
 
@@ -674,7 +675,6 @@ func (a *App) autoOnboard() {
 	}
 
 	// Always install default config (overwrite whatever picoclaw onboard may have created)
-	configPath := filepath.Join(homeDir, ".picoclaw", "config.json")
 	if err := os.WriteFile(configPath, defaultConfigJSON, 0644); err != nil {
 		fmt.Printf("Failed to write default config: %v\n", err)
 	} else {
