@@ -138,6 +138,7 @@ func (p *PicoclawManager) Execute(args ...string) (string, error) {
 	}
 
 	cmd := exec.Command(binaryPath, args...)
+	hideWindow(cmd)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return string(output), err
@@ -160,6 +161,7 @@ func (p *PicoclawManager) StartGateway() error {
 	}
 
 	p.cmd = exec.Command(binaryPath, "gateway")
+	hideWindow(p.cmd)
 	p.cmd.Dir = p.GetConfigDir()
 	p.cmd.Stdout = os.Stdout
 	p.cmd.Stderr = os.Stderr
@@ -662,6 +664,7 @@ func (a *App) autoOnboard() {
 	binaryPath, err := a.picoclaw.FindBinary()
 	if err == nil && binaryPath != "" {
 		cmd := exec.Command(binaryPath, "onboard")
+		hideWindow(cmd)
 		cmd.Dir = homeDir
 		cmd.Stdin = strings.NewReader("y\n") // Auto-confirm if config exists
 		output, err := cmd.CombinedOutput()
@@ -1179,6 +1182,11 @@ func (a *App) GetAIResponse(content string, files []string) (*ChatSession, error
 	// Enrich message with local context: detect path references and pre-read them
 	fullMessage = a.enrichMessageWithContext(fullMessage)
 
+	// [新增] 专门针对 Windows 系统，防止大模型生成包含数字开头的恶意转义字符 (\20168, \.picoclaw) 导致底层 JSON 引擎解析崩溃。
+	if sysruntime.GOOS == "windows" {
+		fullMessage += "\n\n[System Instruction: If you need to use tool calls with paths on Windows, you MUST use forward slashes `/` instead of backslashes `\\` in your JSON parameters (e.g., C:/Users/xxx/.picoclaw/... ). Using single backslashes will crash the JSON parser.]"
+	}
+
 	// Check if picoclaw is available
 	binaryPath, _ := a.picoclaw.FindBinary()
 	if binaryPath == "" {
@@ -1197,6 +1205,7 @@ func (a *App) GetAIResponse(content string, files []string) (*ChatSession, error
 		}()
 
 		cmd := exec.CommandContext(ctx, binaryPath, "agent", "-m", fullMessage)
+		hideWindow(cmd)
 		cmd.Dir = a.picoclaw.GetConfigDir()
 		outputBytes, err := cmd.CombinedOutput()
 		

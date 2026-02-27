@@ -29,7 +29,7 @@ export default function App() {
   const [currentSessionId, setCurrentSessionId] = useState<string>();
   const [config, setConfig] = useState<Config>({
     model_provider: 'zhipu',
-    model_name: 'glm-4.7',
+    model_name: 'glm-4.7-flash',
     extra_settings: {},
   });
   const [picoclawStatus, setPicoclawStatus] = useState<PicoclawStatus | undefined>();
