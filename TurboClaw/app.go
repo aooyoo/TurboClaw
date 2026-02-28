@@ -478,6 +478,9 @@ func LoadConfig() (*Config, error) {
 			if provider, ok := defaults["provider"].(string); ok {
 				config.ModelProvider = provider
 			}
+			if uiProvider, ok := defaults["_ui_provider"].(string); ok && uiProvider != "" {
+				config.ModelProvider = uiProvider
+			}
 			if model, ok := defaults["model"].(string); ok {
 				config.ModelName = model
 			}
@@ -526,7 +529,15 @@ func SaveConfig(config *Config) error {
 		defaults = make(map[string]interface{})
 		agents["defaults"] = defaults
 	}
-	defaults["provider"] = config.ModelProvider
+
+	if config.ModelProvider == "custom" {
+		defaults["provider"] = "openai"
+		defaults["_ui_provider"] = "custom"
+	} else {
+		defaults["provider"] = config.ModelProvider
+		delete(defaults, "_ui_provider")
+	}
+
 	defaults["model"] = config.ModelName
 
 	// Update providers
@@ -535,6 +546,7 @@ func SaveConfig(config *Config) error {
 		providers = make(map[string]interface{})
 		fullConfig["providers"] = providers
 	}
+	
 	providerCfg, ok := providers[config.ModelProvider].(map[string]interface{})
 	if !ok {
 		providerCfg = make(map[string]interface{})
@@ -545,6 +557,23 @@ func SaveConfig(config *Config) error {
 	providerCfg["api_key"] = config.ModelAPIKey
 	if config.BaseURL != "" {
 		providerCfg["api_base"] = config.BaseURL
+	} else {
+		delete(providerCfg, "api_base")
+	}
+
+	// Always sync custom settings to openai for engine compatibility
+	if config.ModelProvider == "custom" {
+		openaiCfg, ok := providers["openai"].(map[string]interface{})
+		if !ok {
+			openaiCfg = make(map[string]interface{})
+			providers["openai"] = openaiCfg
+		}
+		openaiCfg["api_key"] = config.ModelAPIKey
+		if config.BaseURL != "" {
+			openaiCfg["api_base"] = config.BaseURL
+		} else {
+			delete(openaiCfg, "api_base")
+		}
 	}
 
 	newData, err := json.MarshalIndent(fullConfig, "", "  ")
