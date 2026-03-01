@@ -73,8 +73,8 @@ body {
 }
 
 ::selection {
-  background: var(--color-btn-fg);
-  color: var(--color-btn-bg);
+  background: var(--color-accent);
+  color: #FFFFFF;
 }
 
 .titlebar-padding {

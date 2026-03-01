@@ -638,7 +638,9 @@ func (a *App) startup(ctx context.Context) {
 	a.chatManager = NewChatManager()
 
 	// Extract embedded binary if bundled
-	a.picoclaw.ExtractEmbedded()
+	if err := a.picoclaw.ExtractEmbedded(); err != nil {
+		fmt.Printf("Warning: Failed to extract embedded picoclaw binary: %v\n", err)
+	}
 
 	// Auto-onboard...
 	a.autoOnboard()
