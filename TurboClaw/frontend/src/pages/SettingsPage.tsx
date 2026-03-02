@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/Tabs';
 import { Card } from '../components/Card';
 import { Config } from '../types';
 import { useI18n, Lang } from '../i18n/index';
-import { CheckPermissions, OpenPermissionSettings, GetChannelConfig, SaveChannelConfig } from '../../wailsjs/go/main/App';
+import { CheckPermissions, OpenPermissionSettings, GetChannelConfig, SaveChannelConfig, OpenLocalPath } from '../../wailsjs/go/main/App';
 
 interface PermissionStatus {
   id: string;
@@ -442,12 +442,30 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                       </span>
                     </div>
                     <div className="flex justify-between text-body">
+                      <span className="text-[var(--color-dim)]">Gateway</span>
+                      <span className={picoclawStatus?.running ? 'text-[var(--color-success)]' : 'text-[var(--color-error)]'}>
+                        {picoclawStatus?.running ? '✓ Running' : '✗ Stopped'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-body">
                       <span className="text-[var(--color-dim)]">Config</span>
-                      <span className="font-mono text-small">{picoclawStatus?.configDir || '—'}</span>
+                      <span
+                        className="font-mono text-small cursor-pointer hover:underline text-[var(--color-accent)] truncate max-w-[60%] text-right"
+                        onClick={() => picoclawStatus?.configDir && OpenLocalPath(picoclawStatus.configDir)}
+                        title="Click to open directory"
+                      >
+                        {picoclawStatus?.configDir || '—'}
+                      </span>
                     </div>
                     <div className="flex justify-between text-body">
                       <span className="text-[var(--color-dim)]">Workspace</span>
-                      <span className="font-mono text-small">{picoclawStatus?.workspace || '—'}</span>
+                      <span
+                        className="font-mono text-small cursor-pointer hover:underline text-[var(--color-accent)] truncate max-w-[60%] text-right"
+                        onClick={() => picoclawStatus?.workspace && OpenLocalPath(picoclawStatus.workspace)}
+                        title="Click to open directory"
+                      >
+                        {picoclawStatus?.workspace || '—'}
+                      </span>
                     </div>
                   </div>
                 </div>

@@ -1,10 +1,11 @@
 {
   "agents": {
     "defaults": {
+      "_ui_provider": "custom",
       "max_tokens": 8192,
       "max_tool_iterations": 20,
-      "model": "glm-4.7-flash",
-      "provider": "zhipu",
+      "model": "z-ai/glm-4.7-flash:free",
+      "provider": "openai",
       "restrict_to_workspace": false,
       "temperature": 0.7,
       "workspace": "~/.picoclaw/workspace"
@@ -94,6 +95,10 @@
       "api_base": "",
       "api_key": ""
     },
+    "custom": {
+      "api_base": "https://api.ofox.ai/v1",
+      "api_key": "sk-of-EesRMuOPEYNEMhEmUukPoaBbYwwuhELtdGWqoFQiGRREFIlPveynOzakaSqHSvEM"
+    },
     "deepseek": {
       "api_base": "",
       "api_key": ""
@@ -123,8 +128,8 @@
       "api_key": ""
     },
     "openai": {
-      "api_base": "",
-      "api_key": ""
+      "api_base": "https://api.ofox.ai/v1",
+      "api_key": "sk-of-EesRMuOPEYNEMhEmUukPoaBbYwwuhELtdGWqoFQiGRREFIlPveynOzakaSqHSvEM"
     },
     "openrouter": {
       "api_base": "",
@@ -140,7 +145,7 @@
     },
     "zhipu": {
       "api_base": "",
-      "api_key": "3acbab5c12b24e31a609bf72267eb339.6jYdj5JjJ7gZd8ZV"
+      "api_key": ""
     }
   },
   "tools": {
